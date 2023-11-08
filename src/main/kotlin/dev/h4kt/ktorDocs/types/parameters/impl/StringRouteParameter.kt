@@ -4,7 +4,7 @@ import dev.h4kt.ktorDocs.types.parameters.RouteParameter
 import io.ktor.http.*
 import io.ktor.server.util.*
 
-class StringRouteParameter(
+data class StringRouteParameter(
     override val name: String,
     override val description: String,
     override val optional: Boolean

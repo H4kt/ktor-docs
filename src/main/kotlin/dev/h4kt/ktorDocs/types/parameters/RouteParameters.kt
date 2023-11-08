@@ -15,7 +15,7 @@ abstract class RouteParameters {
             name = settings.name,
             description = settings.description,
             optional = false
-        )
+        ).also { parameters += it }
     }
 
     /*protected fun optionalString(
@@ -28,6 +28,10 @@ abstract class RouteParameters {
         parameters: Parameters
     ) {
         this.parameters.forEach { it.parse(parameters) }
+    }
+
+    override fun toString(): String {
+        return "RouteParameters(parameters=[${parameters.joinToString()}])"
     }
 
 }
