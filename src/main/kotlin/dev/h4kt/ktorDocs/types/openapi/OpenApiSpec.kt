@@ -1,8 +1,12 @@
-package dev.h4kt.ktorDocs.openapi
+package dev.h4kt.ktorDocs.types.openapi
 
+import com.charleskorn.kaml.PolymorphismStyle
+import com.charleskorn.kaml.SingleLineStringStyle
+import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlConfiguration
 import dev.h4kt.ktorDocs.compat.SerialHttpMethod
-import dev.h4kt.ktorDocs.openapi.components.OpenApiComponents
-import dev.h4kt.ktorDocs.openapi.route.OpenApiRoute
+import dev.h4kt.ktorDocs.types.openapi.components.OpenApiComponents
+import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -1,10 +1,10 @@
-package dev.h4kt.ktorDocs.openapi
+package dev.h4kt.ktorDocs.types.openapi
 
 import com.charleskorn.kaml.*
-import dev.h4kt.ktorDocs.openapi.components.OpenApiSchema
-import dev.h4kt.ktorDocs.openapi.route.OpenApiRoute
-import dev.h4kt.ktorDocs.openapi.route.OpenApiRouteBody
-import dev.h4kt.ktorDocs.openapi.route.OpenApiRouteParameter
+import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
+import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
+import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteBody
+import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteParameter
 import io.ktor.http.*
 import java.io.File
 
@@ -61,7 +61,8 @@ fun main() {
         configuration = YamlConfiguration(
             encodeDefaults = false,
             polymorphismStyle = PolymorphismStyle.Property,
-            singleLineStringStyle = SingleLineStringStyle.Plain
+            singleLineStringStyle = SingleLineStringStyle.Plain,
+            sequenceBlockIndent = 2
         )
     )
 

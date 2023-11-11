@@ -4,21 +4,21 @@ info:
   version: v1
   description: Dummy description
 servers:
-- url: http://localhost:1337
-  description: Local test server
+  - url: http://localhost:1337
+    description: Local test server
 tags:
-- name: common
+  - name: common
 paths:
   /foo/bar:
     get:
       tags:
-      - common
+        - common
       summary: Test API route
       parameters:
-      - in: query
-        name: query
-        schema:
-          type: "string"
+        - in: query
+          name: query
+          schema:
+            type: "string"
       responses:
         200:
           description: Success
@@ -27,5 +27,20 @@ paths:
               schema:
                 type: "object"
                 properties:
-                  query:
-                    type: "string"
+                  users:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        name:
+                          type: "string"
+                        role:
+                          type: "string"
+                          enum:
+                            - DEFAULT
+                            - ADMIN
+                      required:
+                        - name
+                        - role
+                required:
+                  - users
