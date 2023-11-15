@@ -1,11 +1,13 @@
 package dev.h4kt.ktorDocs.types.parameters
 
 import io.ktor.http.*
+import io.ktor.util.reflect.*
 import kotlin.reflect.KProperty
 
 abstract class RouteParameter<TOutput : Any> {
 
     abstract val name: String
+    abstract val type: TypeInfo
     abstract val description: String
     abstract val optional: Boolean
 

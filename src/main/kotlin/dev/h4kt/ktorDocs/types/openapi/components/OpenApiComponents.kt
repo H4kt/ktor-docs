@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class OpenApiComponents(
-    val securitySchemes: Map<String, OpenApiSecurityScheme>,
-    val schemas: List<Unit>
+    val securitySchemes: Map<String, OpenApiSecurityScheme> = emptyMap(),
+    val schemas: Map<String, OpenApiSchema> = emptyMap()
 )

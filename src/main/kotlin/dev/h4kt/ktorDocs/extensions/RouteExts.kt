@@ -1,18 +1,16 @@
 package dev.h4kt.ktorDocs.extensions
 
+import dev.h4kt.ktorDocs.types.DocumentedRoute
 import io.ktor.server.routing.*
+import io.ktor.util.*
 
-internal val Route.absolutePath: String
-    get() {
+private val documentationAttributeKey = AttributeKey<DocumentedRoute>("documentation")
 
-        val parentPath = parent?.absolutePath ?: "/"
+internal val Route.isDocumented: Boolean
+    get() = attributes.contains(documentationAttributeKey)
 
-        return when (selector) {
-            is TrailingSlashRouteSelector,
-//            is AuthenticationRouteSelector,
-            is HttpMethodRouteSelector,
-            is HttpHeaderRouteSelector,
-            is HttpAcceptRouteSelector -> parentPath
-            else -> parentPath.let { if (it.endsWith("/")) it else "$it/" } + selector.toString()
-        }
+internal var Route.documentation: DocumentedRoute
+    get() = attributes[documentationAttributeKey]
+    set(value) {
+        attributes.put(documentationAttributeKey, value)
     }

@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.compat
+package dev.h4kt.ktorDocs.serializers
 
 import io.ktor.http.*
 import kotlinx.serialization.KSerializer

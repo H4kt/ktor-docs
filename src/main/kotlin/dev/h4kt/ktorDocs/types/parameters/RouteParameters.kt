@@ -1,37 +1,23 @@
 package dev.h4kt.ktorDocs.types.parameters
 
-import dev.h4kt.ktorDocs.types.parameters.impl.StringRouteParameter
-import io.ktor.http.*
+import io.ktor.server.application.*
 
 abstract class RouteParameters {
 
-    protected val parameters = mutableListOf<RouteParameter<*>>()
+    internal object Empty : RouteParameters()
 
-    protected fun string(
-        configure: RouteParameterBuilder.() -> Unit
-    ): RouteParameter<String> {
-        val settings = RouteParameterBuilder().apply(configure)
-        return StringRouteParameter(
-            name = settings.name,
-            description = settings.description,
-            optional = false
-        ).also { parameters += it }
+    companion object {
+        internal val emptyDelegate = { Empty }
     }
 
-    /*protected fun optionalString(
-        builder: RouteParameterBuilder.() -> Unit
-    ): RouteParameter<String?> {
-        TODO()
-    }*/
+    val path = RouteParametersContainer()
+    val query = RouteParametersContainer()
 
     internal fun parse(
-        parameters: Parameters
+        call: ApplicationCall
     ) {
-        this.parameters.forEach { it.parse(parameters) }
-    }
-
-    override fun toString(): String {
-        return "RouteParameters(parameters=[${parameters.joinToString()}])"
+        path.parse(call.parameters)
+        query.parse(call.request.queryParameters)
     }
 
 }

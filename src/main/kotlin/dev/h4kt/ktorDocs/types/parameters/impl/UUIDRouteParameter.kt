@@ -4,17 +4,18 @@ import dev.h4kt.ktorDocs.types.parameters.RouteParameter
 import io.ktor.http.*
 import io.ktor.server.util.*
 import io.ktor.util.reflect.*
+import java.util.*
 
-data class StringRouteParameter(
+data class UUIDRouteParameter(
     override val name: String,
     override val description: String,
     override val optional: Boolean
-) : RouteParameter<String>() {
+) : RouteParameter<UUID>() {
 
-    override val type = typeInfo<String>()
+    override val type = typeInfo<UUID>()
 
     override fun parse(parameters: Parameters) {
-        value = parameters.getOrFail(name)
+        value = parameters.getOrFail<UUID>(name)
     }
 
 }

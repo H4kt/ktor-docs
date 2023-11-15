@@ -20,7 +20,10 @@ dependencies {
 
     implementation("ch.qos.logback:logback-classic:1.4.11")
 
-    implementation("com.charleskorn.kaml:kaml:0.55.0")
+    api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+
+    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    api("com.charleskorn.kaml:kaml:0.55.0")
 
     testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.10")

@@ -1,22 +1,20 @@
 package dev.h4kt.ktorDocs.types.openapi
 
-import com.charleskorn.kaml.PolymorphismStyle
-import com.charleskorn.kaml.SingleLineStringStyle
-import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlConfiguration
-import dev.h4kt.ktorDocs.compat.SerialHttpMethod
+import dev.h4kt.ktorDocs.serializers.SerialHttpMethod
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiComponents
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+typealias OpenApiSpecPaths = Map<String, Map<SerialHttpMethod, OpenApiRoute>>
+
 @Serializable
 data class OpenApiSpec(
     @SerialName("openapi") val version: String,
     val info: Info,
-    val servers: List<OpenApiServer>,
-    val tags: List<Tag>,
-    val paths: Map<String, Map<SerialHttpMethod, OpenApiRoute>> = emptyMap(),
+    val servers: List<OpenApiServer> = emptyList(),
+    val tags: List<Tag> = emptyList(),
+    val paths: OpenApiSpecPaths = emptyMap(),
     val components: OpenApiComponents? = null
 ) {
 

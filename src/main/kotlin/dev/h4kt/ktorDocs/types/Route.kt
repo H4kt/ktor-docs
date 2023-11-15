@@ -5,19 +5,17 @@ import dev.h4kt.ktorDocs.types.parameters.RouteParameters
 import io.ktor.http.*
 import io.ktor.util.reflect.*
 
-typealias CallHandler<TPathParams, TQueryParams> = suspend CallContext<TPathParams, TQueryParams>.() -> Unit
+typealias CallHandler<TParams> = suspend CallContext<TParams>.() -> Unit
 
 data class DocumentedRoute(
-    val method: HttpMethod,
     val description: String,
     val tags: List<String>,
-    val pathParameters: RouteParameters,
-    val queryParameters: RouteParameters,
+    val parameters: RouteParameters,
     val requestBody: TypeInfo?,
     val responses: Map<HttpStatusCode, TypeInfo>
 )
 
-class RouteBuilder<TPathParams : RouteParameters, TQueryParams : RouteParameters> {
+class RouteBuilder<TParams : RouteParameters> {
 
     var description: String = ""
     var tags = emptyList<String>()
@@ -25,10 +23,10 @@ class RouteBuilder<TPathParams : RouteParameters, TQueryParams : RouteParameters
     var requestBody: TypeInfo? = null
 
     internal var responsesBuilder = RouteResponsesBuilder()
-    internal var handler: CallHandler<TPathParams, TQueryParams> = {}
+    internal var handler: CallHandler<TParams> = {}
 
     @KtorDocsDsl
-    fun handle(handler: CallHandler<TPathParams, TQueryParams>) {
+    fun handle(handler: CallHandler<TParams>) {
         this.handler = handler
     }
 
@@ -43,13 +41,9 @@ class RouteResponsesBuilder {
 
     internal val responses = mutableMapOf<HttpStatusCode, TypeInfo>()
 
-    fun HttpStatusCode.returns(value: TypeInfo) {
-        responses[this] = value
-    }
-
     @KtorDocsDsl
-    inline infix fun <reified T : Any> HttpStatusCode.returns(value: T) {
-        this.returns(typeInfo<T>())
+    infix fun HttpStatusCode.returns(value: TypeInfo) {
+        responses[this] = value
     }
 
 }
