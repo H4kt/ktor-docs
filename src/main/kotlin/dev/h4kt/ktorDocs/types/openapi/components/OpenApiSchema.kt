@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.openapi.components
+package dev.h4kt.ktorDocs.types.openapi.components
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -21,7 +21,7 @@ sealed class OpenApiSchema private constructor() {
     data class String(
         val format: kotlin.String? = null,
         val pattern: kotlin.String? = null,
-        val enum: List<String>? = null,
+        val enum: List<kotlin.String>? = null,
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false,
     ) : OpenApiSchema()
@@ -82,6 +82,14 @@ sealed class OpenApiSchema private constructor() {
     data class Object(
         val properties: Map<kotlin.String, OpenApiSchema> = emptyMap(),
         val required: List<kotlin.String> = emptyList(),
+        override val nullable: kotlin.Boolean = false,
+        override val deprecated: kotlin.Boolean = false,
+    ) : OpenApiSchema()
+
+    @Serializable
+    @SerialName("oneOf")
+    data class OneOf(
+        val variants: List<OpenApiSchema> = emptyList(),
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false,
     ) : OpenApiSchema()

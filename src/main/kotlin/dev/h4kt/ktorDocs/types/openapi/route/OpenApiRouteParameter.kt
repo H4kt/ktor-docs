@@ -1,6 +1,6 @@
-package dev.h4kt.ktorDocs.openapi.route
+package dev.h4kt.ktorDocs.types.openapi.route
 
-import dev.h4kt.ktorDocs.openapi.components.OpenApiSchema
+import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

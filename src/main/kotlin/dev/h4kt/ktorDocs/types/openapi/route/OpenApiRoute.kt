@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.openapi.route
+package dev.h4kt.ktorDocs.types.openapi.route
 
 import kotlinx.serialization.Serializable
 

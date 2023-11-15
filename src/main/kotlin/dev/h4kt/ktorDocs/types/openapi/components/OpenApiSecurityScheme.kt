@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.openapi.components
+package dev.h4kt.ktorDocs.types.openapi.components
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
