@@ -4,13 +4,13 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class OpenApiSecurityScheme {
+sealed interface OpenApiSecurityScheme {
 
     @Serializable
     @SerialName("http")
     data class Http(
         val scheme: Scheme
-    ) {
+    ) : OpenApiSecurityScheme {
 
         @Serializable
         enum class Scheme {
@@ -25,7 +25,7 @@ sealed class OpenApiSecurityScheme {
     data class ApiKey(
         val disposition: Disposition,
         val name: String,
-    ) {
+    ) : OpenApiSecurityScheme {
 
         @Serializable
         enum class Disposition {
@@ -39,13 +39,13 @@ sealed class OpenApiSecurityScheme {
     @SerialName("openIdConnect")
     data class OpenId(
         val openIdConnectUrl: String
-    )
+    ) : OpenApiSecurityScheme
 
     @Serializable
     @SerialName("oauth2")
     data class OAuth2(
         val flows: Flows
-    ) {
+    ) : OpenApiSecurityScheme {
 
         @Serializable
         data class Flows(

@@ -1,26 +1,32 @@
 package dev.h4kt.ktorDocs.plugin
 
 import com.charleskorn.kaml.*
+import dev.h4kt.ktorDocs.annotations.UnsafeAPI
 import dev.h4kt.ktorDocs.extensions.documentation
 import dev.h4kt.ktorDocs.extensions.isDocumented
 import dev.h4kt.ktorDocs.toOpenApiSchema
+import dev.h4kt.ktorDocs.toOpenApiSecurityScheme
 import dev.h4kt.ktorDocs.types.DocumentedRoute
 import dev.h4kt.ktorDocs.types.openapi.OpenApiServer
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpec
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpecPaths
-import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
+import dev.h4kt.ktorDocs.types.openapi.components.OpenApiComponents
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteBody
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteParameter
+import dev.h4kt.ktorDocs.utils.getInternalField
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.application.hooks.*
+import io.ktor.server.auth.*
 import io.ktor.server.plugins.swagger.*
 import io.ktor.server.routing.*
 import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
+
+private typealias RouteWithAuthentications = Pair<Set<String>, Route>
 
 private val logger = LoggerFactory.getLogger("KtorDocsPlugin")
 
@@ -74,6 +80,14 @@ val KtorDocs = createApplicationPlugin(
 
     on(MonitoringEvent(ApplicationStarted)) { application ->
 
+        logger.info("Gathering authentication providers...")
+
+        val authenticationProviders = measureTimedValue {
+            application.gatherAuthenticationProviders()
+        }
+
+        logger.info("Gathered ${authenticationProviders.value.size} authentication providers in ${authenticationProviders.duration}")
+
         logger.info("Gathering documented routes...")
 
         val routes = measureTimedValue {
@@ -82,19 +96,22 @@ val KtorDocs = createApplicationPlugin(
 
         logger.info("Gathered ${routes.value.size} documented routes in ${routes.duration}")
 
-
         logger.info("Generating OpenAPI spec...")
 
         val openApiSpecGenerationTime = measureTime {
-            generateOpenApiSpec(
-                config = config.openApi,
-                outputFilePath = config.documentationFilePath,
-                routes = routes.value
-            )
+            try {
+                application.generateOpenApiSpec(
+                    config = config.openApi,
+                    outputFilePath = config.documentationFilePath,
+                    authenticationProviders = authenticationProviders.value,
+                    routes = routes.value
+                )
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+            }
         }
 
         logger.info("OpenAPI spec generation took $openApiSpecGenerationTime")
-
 
         if (config.swagger.isEnabled) {
 
@@ -112,29 +129,46 @@ val KtorDocs = createApplicationPlugin(
 
 }
 
-private fun generateOpenApiSpec(
+private fun Application.generateOpenApiSpec(
     config: KtorDocsConfig.OpenApi,
     outputFilePath: String,
-    routes: Map<String, Map<HttpMethod, Route>>
+    authenticationProviders: Map<String, AuthenticationProvider>,
+    routes: Map<String, Map<HttpMethod, RouteWithAuthentications>>
 ) {
 
     val tags = mutableSetOf<String>()
 
     val paths: OpenApiSpecPaths = routes.mapValues { (_, value) ->
-        value.mapValues mapRoutes@{ (_, route) ->
+        value.mapValues mapRoutes@{ (_, routeWithAuthentications) ->
+
+            val (authentications, route) = routeWithAuthentications
 
             val documentation = route.documentation
             tags.addAll(documentation.tags)
 
-            return@mapRoutes documentation.toOpenApiRoute()
+            return@mapRoutes documentation.toOpenApiRoute(authentications)
         }
     }
+
+    val securitySchemes = authenticationProviders
+        .mapValues { (_, value) ->
+            value.toOpenApiSecurityScheme(this)
+        }
+        .filterValues {
+            it != null
+        }
+        .mapValues { (_, value) ->
+            value!!
+        }
 
     val spec = OpenApiSpec(
         version = config.version,
         info = config.info,
         servers = config.servers,
-        paths = paths
+        paths = paths,
+        components = OpenApiComponents(
+            securitySchemes = securitySchemes.takeIf { it.isNotEmpty() } ?: emptyMap()
+        )
     )
 
     val yaml = Yaml(
@@ -152,7 +186,9 @@ private fun generateOpenApiSpec(
 
 }
 
-private fun DocumentedRoute.toOpenApiRoute(): OpenApiRoute {
+private fun DocumentedRoute.toOpenApiRoute(
+    authentications: Set<String>
+): OpenApiRoute {
 
     val parameters = mutableListOf<OpenApiRouteParameter>()
 
@@ -203,19 +239,35 @@ private fun DocumentedRoute.toOpenApiRoute(): OpenApiRoute {
     return OpenApiRoute(
         tags = tags,
         summary = description,
+        security = authentications.map { mapOf(it to emptyList()) },
         parameters = parameters,
         requestBody = requestBody,
         responses = responses
     )
 }
 
-private fun Application.gatherDocumentedRoutes(): Map<String, Map<HttpMethod, Route>> {
+@OptIn(UnsafeAPI::class)
+private fun Application.gatherAuthenticationProviders(): Map<String, AuthenticationProvider> {
 
-    val result = mutableMapOf<String, MutableMap<HttpMethod, Route>>()
+    val authenticationPlugin = plugin(Authentication)
+
+    val config = authenticationPlugin.getInternalField<AuthenticationConfig>("config")
+    val providers = config.getInternalField<Map<String?, AuthenticationProvider>>("providers")
+
+    return providers.filterKeys { it != null }
+        .mapKeys { (key) ->
+            key!!
+        }
+}
+
+private fun Application.gatherDocumentedRoutes(): Map<String, Map<HttpMethod, RouteWithAuthentications>> {
+
+    val result = mutableMapOf<String, MutableMap<HttpMethod, RouteWithAuthentications>>()
 
     traverseChildren(
         currentRoute = routing {},
         currentPath = "",
+        authentications = emptySet(),
         result = result
     )
 
@@ -225,7 +277,8 @@ private fun Application.gatherDocumentedRoutes(): Map<String, Map<HttpMethod, Ro
 private fun traverseChildren(
     currentRoute: Route,
     currentPath: String,
-    result: MutableMap<String, MutableMap<HttpMethod, Route>>
+    authentications: Set<String>,
+    result: MutableMap<String, MutableMap<HttpMethod, RouteWithAuthentications>>
 ) {
 
     val selector = currentRoute.selector
@@ -239,15 +292,22 @@ private fun traverseChildren(
             ?: "/"
 
         result.computeIfAbsent(path) { mutableMapOf() }
-            .set(selector.method, currentRoute)
+            .set(selector.method, authentications to currentRoute)
 
         return
+    }
+
+    val downstreamAuthentications = when (selector) {
+        is AuthenticationRouteSelector ->
+            authentications + selector.names.filterNotNull()
+        else -> authentications
     }
 
     val suffix = when (selector) {
         TrailingSlashRouteSelector,
         is HttpHeaderRouteSelector,
         is HttpAcceptRouteSelector,
+        is AuthenticationRouteSelector,
         is HttpMultiAcceptRouteSelector -> ""
         else -> selector.toString()
             .takeIf { it.isNotEmpty() }
@@ -256,7 +316,12 @@ private fun traverseChildren(
     }
 
     currentRoute.children.forEach {
-        traverseChildren(it, "$currentPath$suffix", result)
+        traverseChildren(
+            currentRoute = it,
+            currentPath = "$currentPath$suffix",
+            authentications = downstreamAuthentications,
+            result = result
+        )
     }
 
 }

@@ -7,7 +7,7 @@ data class OpenApiRoute(
     val tags: List<String> = emptyList(),
     val summary: String = "",
     val parameters: List<OpenApiRouteParameter> = emptyList(),
-    val security: Map<String, List<String>> = emptyMap(),
+    val security: List<Map<String, List<String>>> = emptyList(),
     val requestBody: OpenApiRouteBody? = null,
     val responses: Map<String, OpenApiRouteBody>
 )
