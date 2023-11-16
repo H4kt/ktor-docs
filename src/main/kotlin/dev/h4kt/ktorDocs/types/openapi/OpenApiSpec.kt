@@ -20,9 +20,9 @@ data class OpenApiSpec(
 
     @Serializable
     data class Info(
-        val title: String,
-        val version: String,
-        val description: String = ""
+        var title: String,
+        var version: String,
+        var description: String = ""
     )
 
     @Serializable

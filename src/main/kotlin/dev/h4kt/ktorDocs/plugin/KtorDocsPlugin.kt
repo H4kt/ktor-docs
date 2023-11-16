@@ -8,6 +8,7 @@ import dev.h4kt.ktorDocs.types.DocumentedRoute
 import dev.h4kt.ktorDocs.types.openapi.OpenApiServer
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpec
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpecPaths
+import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteBody
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteParameter
@@ -35,7 +36,7 @@ class KtorDocsConfig {
 
         var version = "3.0.0"
 
-        var info = OpenApiSpec.Info(
+        val info = OpenApiSpec.Info(
             title = "Default title",
             version = "v1",
             description = ""
@@ -43,11 +44,24 @@ class KtorDocsConfig {
 
         var servers = listOf<OpenApiServer>()
 
+        fun info(configure: OpenApiSpec.Info.() -> Unit) {
+            info.apply(configure)
+        }
+
     }
 
-    var swagger = Swagger()
-    var openApi = OpenApi()
+    val swagger = Swagger()
+    val openApi = OpenApi()
+
     var documentationFilePath: String = "documentation.yml"
+
+    fun swagger(configure: Swagger.() -> Unit) {
+        swagger.apply(configure)
+    }
+
+    fun openApi(configure: OpenApi.() -> Unit) {
+        openApi.apply(configure)
+    }
 
 }
 

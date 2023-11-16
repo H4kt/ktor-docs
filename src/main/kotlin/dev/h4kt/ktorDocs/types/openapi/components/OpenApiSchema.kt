@@ -1,14 +1,18 @@
 package dev.h4kt.ktorDocs.types.openapi.components
 
+import dev.h4kt.ktorDocs.serializers.OpenApiSchemaSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Serializable/*(with = OpenApiSchemaSerializer::class)*/
+@Serializable(with = OpenApiSchemaSerializer::class)
 sealed interface OpenApiSchema {
 
     val title: kotlin.String
     val nullable: kotlin.Boolean
     val deprecated: kotlin.Boolean
+
+    @Serializable
+    sealed interface TypedSchema : OpenApiSchema
 
     @Serializable
     @SerialName("string")
@@ -19,7 +23,7 @@ sealed interface OpenApiSchema {
         override val title: kotlin.String = "",
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false
-    ) : OpenApiSchema
+    ) : TypedSchema
 
     @Serializable
     @SerialName("number")
@@ -32,7 +36,7 @@ sealed interface OpenApiSchema {
         override val title: kotlin.String = "",
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false
-    ) : OpenApiSchema {
+    ) : TypedSchema {
 
         enum class Format {
             FLOAT, DOUBLE
@@ -51,7 +55,7 @@ sealed interface OpenApiSchema {
         override val title: kotlin.String = "",
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false
-    ) : OpenApiSchema {
+    ) : TypedSchema {
 
         enum class Format {
             INT32, INT64
@@ -65,7 +69,7 @@ sealed interface OpenApiSchema {
         override val title: kotlin.String = "",
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false
-    ) : OpenApiSchema
+    ) : TypedSchema
 
     @Serializable
     @SerialName("array")
@@ -74,7 +78,7 @@ sealed interface OpenApiSchema {
         override val title: kotlin.String = "",
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false
-    ) : OpenApiSchema
+    ) : TypedSchema
 
     @Serializable
     @SerialName("object")
@@ -84,10 +88,9 @@ sealed interface OpenApiSchema {
         override val title: kotlin.String = "",
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false
-    ) : OpenApiSchema
+    ) : TypedSchema
 
     @Serializable
-    @SerialName("ref")
     data class Reference(
         @SerialName("\$ref") val ref: kotlin.String,
         override val title: kotlin.String = "",
@@ -96,7 +99,6 @@ sealed interface OpenApiSchema {
     ) : OpenApiSchema
 
     @Serializable
-    @SerialName("oneOf")
     data class OneOf(
         @SerialName("oneOf") val variants: List<OpenApiSchema> = emptyList(),
         override val title: kotlin.String = "",
