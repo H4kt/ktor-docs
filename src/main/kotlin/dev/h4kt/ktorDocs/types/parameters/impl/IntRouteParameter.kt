@@ -11,7 +11,7 @@ data class IntRouteParameter(
     override val optional: Boolean
 ) : RouteParameter<Int>() {
 
-    override val type = typeInfo<Int>()
+    override val typeInfo = typeInfo<Int>()
 
     override fun parse(parameters: Parameters) {
         value = parameters.getOrFail<Int>(name)

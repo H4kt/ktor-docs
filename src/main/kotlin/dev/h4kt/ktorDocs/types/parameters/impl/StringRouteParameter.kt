@@ -11,7 +11,7 @@ data class StringRouteParameter(
     override val optional: Boolean
 ) : RouteParameter<String>() {
 
-    override val type = typeInfo<String>()
+    override val typeInfo = typeInfo<String>()
 
     override fun parse(parameters: Parameters) {
         value = parameters.getOrFail(name)

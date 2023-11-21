@@ -2,6 +2,7 @@ package dev.h4kt.ktorDocs.types.parameters.impl
 
 import dev.h4kt.ktorDocs.types.parameters.RouteParameter
 import io.ktor.http.*
+import io.ktor.server.plugins.*
 import io.ktor.server.util.*
 import io.ktor.util.reflect.*
 import kotlinx.datetime.Instant
@@ -13,10 +14,20 @@ data class InstantRouteParameter(
     override val optional: Boolean
 ) : RouteParameter<Instant>() {
 
-    override val type = typeInfo<Instant>()
+    override val typeInfo = typeInfo<Instant>()
 
     override fun parse(parameters: Parameters) {
-        value = parameters.getOrFail<String>(name).run(Instant::parse)
+
+        try {
+            value = parameters.getOrFail<String>(name).run(Instant::parse)
+        } catch (ex: Exception) {
+            throw ParameterConversionException(
+                parameterName = name,
+                type = typeInfo.type.simpleName ?: typeInfo.type.toString(),
+                cause = ex
+            )
+        }
+
     }
 
 }

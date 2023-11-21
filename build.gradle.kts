@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dev.h4kt"
-version = "1.2.0"
+version = "1.2.1"
 
 val ktorVersion: String by project
 val gitlabProjectId: String by project

@@ -11,7 +11,7 @@ data class LongRouteParameter(
     override val optional: Boolean
 ) : RouteParameter<Long>() {
 
-    override val type = typeInfo<Long>()
+    override val typeInfo = typeInfo<Long>()
 
     override fun parse(parameters: Parameters) {
         value = parameters.getOrFail<Long>(name)

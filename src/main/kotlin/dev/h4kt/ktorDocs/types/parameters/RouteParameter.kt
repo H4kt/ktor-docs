@@ -7,7 +7,7 @@ import kotlin.reflect.KProperty
 abstract class RouteParameter<TOutput : Any> {
 
     abstract val name: String
-    abstract val type: TypeInfo
+    abstract val typeInfo: TypeInfo
     abstract val description: String
     abstract val optional: Boolean
 

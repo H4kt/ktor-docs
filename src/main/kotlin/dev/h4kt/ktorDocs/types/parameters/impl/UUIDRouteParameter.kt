@@ -12,7 +12,7 @@ data class UUIDRouteParameter(
     override val optional: Boolean
 ) : RouteParameter<UUID>() {
 
-    override val type = typeInfo<UUID>()
+    override val typeInfo = typeInfo<UUID>()
 
     override fun parse(parameters: Parameters) {
         value = parameters.getOrFail<UUID>(name)
