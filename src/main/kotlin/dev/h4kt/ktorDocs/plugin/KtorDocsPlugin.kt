@@ -33,9 +33,16 @@ private val logger = LoggerFactory.getLogger("KtorDocsPlugin")
 class KtorDocsConfig {
 
     class Swagger {
+
         var isEnabled = true
         var path = "swagger"
-        var config: SwaggerConfig.() -> Unit = {}
+
+        internal var config: SwaggerConfig.() -> Unit = {}
+
+        fun config(configure: SwaggerConfig.() -> Unit) {
+            config = configure
+        }
+
     }
 
     class OpenApi {
@@ -48,10 +55,14 @@ class KtorDocsConfig {
             description = ""
         )
 
-        var servers = listOf<OpenApiServer>()
+        val servers = mutableListOf<OpenApiServer>()
 
         fun info(configure: OpenApiSpec.Info.() -> Unit) {
             info.apply(configure)
+        }
+
+        fun server(configure: OpenApiServer.() -> Unit) {
+            servers += OpenApiServer("").apply(configure)
         }
 
     }
