@@ -49,7 +49,7 @@ class RouteParametersContainer : Iterable<RouteParameter<*>> {
         construct: (String, String, Boolean) -> RouteParameter<T>
     ): RouteParameter<T> {
         val settings = RouteParameterBuilder().apply(configure)
-        return construct(settings.name, settings.description, false)
+        return construct(settings.name, settings.description, true)
             .also(::add)
     }
 

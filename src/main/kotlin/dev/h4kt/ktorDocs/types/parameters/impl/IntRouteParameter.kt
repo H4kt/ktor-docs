@@ -8,7 +8,7 @@ import io.ktor.util.reflect.*
 data class IntRouteParameter(
     override val name: String,
     override val description: String,
-    override val optional: Boolean
+    override val required: Boolean
 ) : RouteParameter<Int>() {
 
     override val typeInfo = typeInfo<Int>()

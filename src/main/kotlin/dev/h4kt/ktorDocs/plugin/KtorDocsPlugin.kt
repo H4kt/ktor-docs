@@ -196,7 +196,8 @@ private fun DocumentedRoute.toOpenApiRoute(
         parameters += OpenApiRouteParameter(
             type = OpenApiRouteParameter.Type.PATH,
             name = it.name,
-            schema = it.typeInfo.kotlinType!!.toOpenApiSchema()
+            schema = it.typeInfo.kotlinType!!.toOpenApiSchema(),
+            required = it.required
         )
     }
 

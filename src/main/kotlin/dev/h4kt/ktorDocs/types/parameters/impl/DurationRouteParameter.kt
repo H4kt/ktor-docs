@@ -10,7 +10,7 @@ import kotlin.time.Duration
 data class DurationRouteParameter(
     override val name: String,
     override val description: String,
-    override val optional: Boolean
+    override val required: Boolean
 ) : RouteParameter<Duration>() {
 
     override val typeInfo = typeInfo<Duration>()

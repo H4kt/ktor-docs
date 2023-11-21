@@ -11,7 +11,7 @@ import kotlinx.datetime.LocalDate
 data class LocalDateRouteParameter(
     override val name: String,
     override val description: String,
-    override val optional: Boolean
+    override val required: Boolean
 ) : RouteParameter<LocalDate>() {
 
     override val typeInfo = typeInfo<LocalDate>()

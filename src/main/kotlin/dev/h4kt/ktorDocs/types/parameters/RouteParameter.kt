@@ -9,7 +9,7 @@ abstract class RouteParameter<TOutput : Any> {
     abstract val name: String
     abstract val typeInfo: TypeInfo
     abstract val description: String
-    abstract val optional: Boolean
+    abstract val required: Boolean
 
     open lateinit var value: TOutput
 

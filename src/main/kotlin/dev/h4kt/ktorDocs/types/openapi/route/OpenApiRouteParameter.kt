@@ -8,7 +8,8 @@ import kotlinx.serialization.Serializable
 data class OpenApiRouteParameter(
     @SerialName("in") val type: Type,
     val name: String,
-    val schema: OpenApiSchema
+    val schema: OpenApiSchema,
+    val required: Boolean = false
 ) {
 
     enum class Type {
