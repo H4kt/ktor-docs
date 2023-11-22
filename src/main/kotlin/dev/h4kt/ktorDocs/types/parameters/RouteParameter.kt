@@ -4,20 +4,21 @@ import io.ktor.http.*
 import io.ktor.util.reflect.*
 import kotlin.reflect.KProperty
 
-abstract class RouteParameter<TOutput : Any> {
+sealed class RouteParameter<TOutput> {
 
     abstract val name: String
     abstract val typeInfo: TypeInfo
     abstract val description: String
+
     abstract val required: Boolean
 
-    open lateinit var value: TOutput
+    protected abstract val value: TOutput
 
     abstract fun parse(parameters: Parameters)
 
-    operator fun getValue(
+    abstract operator fun getValue(
         thisRef: Any?,
         property: KProperty<*>
-    ) = value
+    ): TOutput
 
 }

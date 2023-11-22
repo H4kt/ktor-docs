@@ -4,6 +4,7 @@ import dev.h4kt.ktorDocs.annotations.KtorDocsDsl
 import dev.h4kt.ktorDocs.types.parameters.RouteParameters
 import io.ktor.http.*
 import io.ktor.util.reflect.*
+import kotlin.reflect.KClass
 
 typealias CallHandler<TParams> = suspend CallContext<TParams>.() -> Unit
 
@@ -44,6 +45,16 @@ class RouteResponsesBuilder {
     @KtorDocsDsl
     infix fun HttpStatusCode.returns(value: TypeInfo) {
         responses[this] = value
+    }
+
+    @KtorDocsDsl
+    inline infix fun <reified T : Any> HttpStatusCode.returns(value: KClass<T>) {
+        this returns typeInfo<T>()
+    }
+
+    @KtorDocsDsl
+    fun noContent() {
+        HttpStatusCode.NoContent returns typeInfo<Unit>()
     }
 
 }

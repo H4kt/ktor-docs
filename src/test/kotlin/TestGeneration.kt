@@ -1,8 +1,13 @@
+import dev.h4kt.ktorDocs.dsl.get
 import dev.h4kt.ktorDocs.dsl.post
 import dev.h4kt.ktorDocs.plugin.KtorDocs
+import dev.h4kt.ktorDocs.types.parameters.RouteParameters
 import io.ktor.client.*
 import io.ktor.http.*
 import io.ktor.server.auth.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import io.ktor.server.testing.*
 import io.ktor.util.reflect.*
 import kotlinx.serialization.SerialName
@@ -78,22 +83,66 @@ class TestGeneration {
         routing {
 
             authenticate("test-basic") {
-                post("/beer/new") {
 
-                    description = "Add new beer"
-                    tags = listOf("Beer")
+                route("beers") {
 
-                    requestBody = typeInfo<Beer>()
+                    val beers = mutableListOf<Beer>()
 
-                    responses {
-                        HttpStatusCode.OK returns typeInfo<Beer>()
+                    class GetRouteParameters : RouteParameters() {
+                        val kind by query.optionalEnum<Beer.Leffe.Kind> {
+                            name = "kind"
+                            description = "Filter by kind"
+                        }
                     }
 
-                    handle {
-                        TODO()
+                    get("leffe", ::GetRouteParameters) {
+
+                        description = "Get list of known leffe beers"
+
+                        responses {
+                            HttpStatusCode.OK returns typeInfo<List<Beer>>()
+                        }
+
+                        handle {
+
+                            val results = synchronized(beers) {
+                                beers.filterIsInstance<Beer.Leffe>()
+                                    .run {
+                                        parameters.kind?.let { kind ->
+                                            filter { it.kind == kind }
+                                        } ?: this
+                                    }
+                            }
+
+                            call.respond(results)
+                        }
+                    }
+
+                    post("new") {
+
+                        description = "Add new beer"
+                        tags = listOf("Beer")
+
+                        requestBody = typeInfo<Beer>()
+
+                        responses {
+                            noContent()
+                        }
+
+                        handle {
+
+                            val beer = call.receive<Beer>()
+
+                            synchronized(beers) {
+                                beers += beer
+                            }
+
+                            call.respond(HttpStatusCode.NoContent)
+                        }
                     }
 
                 }
+
             }
 
         }

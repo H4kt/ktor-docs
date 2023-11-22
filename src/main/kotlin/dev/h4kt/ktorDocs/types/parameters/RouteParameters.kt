@@ -1,5 +1,6 @@
 package dev.h4kt.ktorDocs.types.parameters
 
+import dev.h4kt.ktorDocs.annotations.KtorDocsDsl
 import io.ktor.server.application.*
 
 abstract class RouteParameters {
@@ -10,7 +11,10 @@ abstract class RouteParameters {
         internal val emptyDelegate = { Empty }
     }
 
+    @KtorDocsDsl
     val path = RouteParametersContainer()
+
+    @KtorDocsDsl
     val query = RouteParametersContainer()
 
     internal fun parse(

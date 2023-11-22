@@ -228,12 +228,19 @@ private fun DocumentedRoute.toOpenApiRoute(
     val responses = responses
         .mapKeys { (key) -> key.value.toString() }
         .mapValues { (_, value) ->
-            OpenApiRouteBody(
-                content = mapOf(
+
+            val content = if (value.type == Unit::class) {
+                emptyMap()
+            } else {
+                mapOf(
                     contentType to OpenApiRouteBody.Schema(
                         schema = value.kotlinType!!.toOpenApiSchema()
                     )
                 )
+            }
+
+            OpenApiRouteBody(
+                content = content
             )
         }
 
