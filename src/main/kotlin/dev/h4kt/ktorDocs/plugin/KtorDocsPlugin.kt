@@ -4,16 +4,12 @@ import com.charleskorn.kaml.*
 import dev.h4kt.ktorDocs.annotations.UnsafeAPI
 import dev.h4kt.ktorDocs.extensions.documentation
 import dev.h4kt.ktorDocs.extensions.isDocumented
-import dev.h4kt.ktorDocs.toOpenApiSchema
+import dev.h4kt.ktorDocs.toOpenApiRoute
 import dev.h4kt.ktorDocs.toOpenApiSecurityScheme
-import dev.h4kt.ktorDocs.types.DocumentedRoute
 import dev.h4kt.ktorDocs.types.openapi.OpenApiServer
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpec
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpecPaths
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiComponents
-import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
-import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteBody
-import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteParameter
 import dev.h4kt.ktorDocs.utils.getInternalField
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -195,74 +191,6 @@ private fun Application.generateOpenApiSpec(
         yaml.encodeToStream(spec, it)
     }
 
-}
-
-private fun DocumentedRoute.toOpenApiRoute(
-    authentications: Set<String>
-): OpenApiRoute {
-
-    val parameters = mutableListOf<OpenApiRouteParameter>()
-
-    this.parameters.path.forEach {
-        parameters += OpenApiRouteParameter(
-            type = OpenApiRouteParameter.Type.PATH,
-            name = it.name,
-            schema = it.typeInfo.kotlinType!!.toOpenApiSchema(),
-            required = it.required
-        )
-    }
-
-    this.parameters.query.forEach {
-        parameters += OpenApiRouteParameter(
-            type = OpenApiRouteParameter.Type.QUERY,
-            name = it.name,
-            schema = it.typeInfo.kotlinType!!.toOpenApiSchema()
-        )
-    }
-
-    // TODO: gather content type info
-    val contentType = ContentType.Application.Json
-
-    val requestBody = requestBody
-        ?.kotlinType
-        ?.toOpenApiSchema()
-        ?.let {
-            OpenApiRouteBody(
-                content = mapOf(
-                    contentType to OpenApiRouteBody.Schema(
-                        schema = it
-                    )
-                )
-            )
-        }
-
-    val responses = responses
-        .mapKeys { (key) -> key.value.toString() }
-        .mapValues { (_, value) ->
-
-            val content = if (value.type == Unit::class) {
-                emptyMap()
-            } else {
-                mapOf(
-                    contentType to OpenApiRouteBody.Schema(
-                        schema = value.kotlinType!!.toOpenApiSchema()
-                    )
-                )
-            }
-
-            OpenApiRouteBody(
-                content = content
-            )
-        }
-
-    return OpenApiRoute(
-        tags = tags,
-        summary = description,
-        security = authentications.map { mapOf(it to emptyList()) },
-        parameters = parameters,
-        requestBody = requestBody,
-        responses = responses
-    )
 }
 
 @OptIn(UnsafeAPI::class)
