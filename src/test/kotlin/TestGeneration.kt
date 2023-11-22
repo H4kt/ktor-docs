@@ -31,15 +31,6 @@ sealed interface Beer {
 
 }
 
-class Foo<T : Any>(
-    val bar: Bar<T>,
-    val bar2: Bar<String>
-)
-
-class Bar<T : Any>(
-    val value: T
-)
-
 class TestGeneration {
 
     @Test
@@ -132,7 +123,7 @@ class TestGeneration {
                         description = "Add new beer"
                         tags = listOf("Beer")
 
-                        requestBody = typeInfo<Foo<Int>>()
+                        requestBody = typeInfo<Beer>()
 
                         responses {
                             noContent()

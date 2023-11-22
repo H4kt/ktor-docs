@@ -54,58 +54,22 @@ fun KType.toOpenApiSchema(): OpenApiSchema {
 fun KType.toOpenApiSchema(
     parentTypes: List<KType>
 ): OpenApiSchema {
-
-    val type = when (val classifier = classifier) {
-        is KClass<*> -> classifier
-        is KTypeParameter -> {
-
-            // TODO: think of a better way of resolving downstream generics
-
-            var resolvedType: KClass<*>? = null
-
-            for (parentType in parentTypes.reversed()) {
-
-                val parentClass = (parentType.classifier as? KClass<*>)
-                    ?: continue
-
-                val typeParameter = parentClass
-                    .typeParameters
-                    .first {
-                        it.name == classifier.name
-                    }
-
-                val index = parentClass
-                    .typeParameters
-                    .indexOf(typeParameter)
-
-                val typeProjection = parentType.arguments[index]
-
-                val type = (typeProjection.type?.classifier as? KClass<*>)
-                if (type != null) {
-                    resolvedType = type
-                    break
-                }
-
-            }
-
-            resolvedType!!
-        }
-        else -> throw UnsupportedOperationException()
-    }
-
+    val type = resolveClassifierClass(parentTypes)
     return when {
         type in builtInTypes -> builtInTypes[type]!!
         type.isSubclassOf(Enum::class) -> toOpenApiEnum()
-        type.isSubclassOf(List::class) -> toOpenApiArray()
+        type.isSubclassOf(List::class) -> toOpenApiArray(parentTypes)
         type.isSealed -> toOpenApiOneOf(parentTypes)
         else -> toOpenApiObject(parentTypes)
     }
 
 }
 
-private fun KType.toOpenApiArray(): OpenApiSchema.Array {
+private fun KType.toOpenApiArray(
+    parentTypes: List<KType>
+): OpenApiSchema.Array {
     return OpenApiSchema.Array(
-        items = arguments.first().type!!.toOpenApiSchema()
+        items = arguments.first().type!!.toOpenApiSchema(parentTypes)
     )
 }
 
@@ -167,4 +131,46 @@ private fun KType.toOpenApiObject(
         properties = properties,
         required = required
     )
+}
+
+private fun KType.resolveClassifierClass(
+    parentTypes: List<KType>
+): KClass<*> {
+    return when (val classifier = classifier) {
+        is KClass<*> -> classifier
+        is KTypeParameter -> {
+
+            // TODO: think of a better way of resolving downstream generics
+
+            var resolvedType: KClass<*>? = null
+
+            for (parentType in parentTypes.reversed()) {
+
+                val parentClass = (parentType.classifier as? KClass<*>)
+                    ?: continue
+
+                val typeParameter = parentClass
+                    .typeParameters
+                    .first {
+                        it.name == classifier.name
+                    }
+
+                val index = parentClass
+                    .typeParameters
+                    .indexOf(typeParameter)
+
+                val typeProjection = parentType.arguments[index]
+
+                val type = (typeProjection.type?.classifier as? KClass<*>)
+                if (type != null) {
+                    resolvedType = type
+                    break
+                }
+
+            }
+
+            resolvedType!!
+        }
+        else -> throw UnsupportedOperationException()
+    }
 }

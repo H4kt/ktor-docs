@@ -196,7 +196,8 @@ private fun Application.generateOpenApiSpec(
 @OptIn(UnsafeAPI::class)
 private fun Application.gatherAuthenticationProviders(): Map<String, AuthenticationProvider> {
 
-    val authenticationPlugin = plugin(Authentication)
+    val authenticationPlugin = pluginOrNull(Authentication)
+        ?: return emptyMap()
 
     val config = authenticationPlugin.getInternalField<AuthenticationConfig>("config")
     val providers = config.getInternalField<Map<String?, AuthenticationProvider>>("providers")
