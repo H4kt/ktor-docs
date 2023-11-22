@@ -5,9 +5,10 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.SerialName
-import java.util.UUID
+import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.KTypeParameter
 import kotlin.reflect.full.*
 import kotlin.time.Duration
 
@@ -47,16 +48,57 @@ private val builtInTypes = mapOf(
 )
 
 fun KType.toOpenApiSchema(): OpenApiSchema {
+    return toOpenApiSchema(emptyList())
+}
 
-    val type = classifier as? KClass<*>
-        ?: throw UnsupportedOperationException()
+fun KType.toOpenApiSchema(
+    parentTypes: List<KType>
+): OpenApiSchema {
+
+    val type = when (val classifier = classifier) {
+        is KClass<*> -> classifier
+        is KTypeParameter -> {
+
+            // TODO: think of a better way of resolving downstream generics
+
+            var resolvedType: KClass<*>? = null
+
+            for (parentType in parentTypes.reversed()) {
+
+                val parentClass = (parentType.classifier as? KClass<*>)
+                    ?: continue
+
+                val typeParameter = parentClass
+                    .typeParameters
+                    .first {
+                        it.name == classifier.name
+                    }
+
+                val index = parentClass
+                    .typeParameters
+                    .indexOf(typeParameter)
+
+                val typeProjection = parentType.arguments[index]
+
+                val type = (typeProjection.type?.classifier as? KClass<*>)
+                if (type != null) {
+                    resolvedType = type
+                    break
+                }
+
+            }
+
+            resolvedType!!
+        }
+        else -> throw UnsupportedOperationException()
+    }
 
     return when {
         type in builtInTypes -> builtInTypes[type]!!
         type.isSubclassOf(Enum::class) -> toOpenApiEnum()
         type.isSubclassOf(List::class) -> toOpenApiArray()
-        type.isSealed -> toOpenApiOneOf()
-        else -> toOpenApiObject()
+        type.isSealed -> toOpenApiOneOf(parentTypes)
+        else -> toOpenApiObject(parentTypes)
     }
 
 }
@@ -81,13 +123,15 @@ private fun KType.toOpenApiEnum(): OpenApiSchema.String {
     )
 }
 
-private fun KType.toOpenApiOneOf(): OpenApiSchema.OneOf {
+private fun KType.toOpenApiOneOf(
+    parentTypes: List<KType>
+): OpenApiSchema.OneOf {
 
     val type = classifier as? KClass<*>
         ?: throw UnsupportedOperationException()
 
     val variants = type.sealedSubclasses.map {
-        it.createType().toOpenApiObject()
+        it.createType().toOpenApiObject(parentTypes + this)
     }
 
     return OpenApiSchema.OneOf(
@@ -95,7 +139,9 @@ private fun KType.toOpenApiOneOf(): OpenApiSchema.OneOf {
     )
 }
 
-private fun KType.toOpenApiObject(): OpenApiSchema.Object {
+private fun KType.toOpenApiObject(
+    parentTypes: List<KType>
+): OpenApiSchema.Object {
 
     val type = this.classifier as? KClass<*>
         ?: throw UnsupportedOperationException()
@@ -105,7 +151,9 @@ private fun KType.toOpenApiObject(): OpenApiSchema.Object {
     val properties = type.memberProperties
         .associateBy(
             keySelector = { it.name },
-            valueTransform = { it.returnType.toOpenApiSchema() }
+            valueTransform = {
+                it.returnType.toOpenApiSchema(parentTypes + this)
+            }
         )
 
     val required = type.primaryConstructor
