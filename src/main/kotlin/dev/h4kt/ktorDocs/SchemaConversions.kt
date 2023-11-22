@@ -107,9 +107,7 @@ private fun KType.toOpenApiObject(
     parentTypes: List<KType>
 ): OpenApiSchema.Object {
 
-    val type = this.classifier as? KClass<*>
-        ?: throw UnsupportedOperationException()
-
+    val type = resolveClassifierClass(parentTypes)
     val serialNameAnnotation = type.findAnnotation<SerialName>()
 
     val properties = type.memberProperties
