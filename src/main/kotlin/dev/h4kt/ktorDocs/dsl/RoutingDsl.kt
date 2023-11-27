@@ -30,12 +30,12 @@ fun Route.get(
 fun <TParams : RouteParameters> Route.get(
     parametersBuilder: () -> TParams,
     builder: RouteBuilder<TParams>.() -> Unit
-) = method("/", HttpMethod.Get, parametersBuilder, builder)
+) = method("", HttpMethod.Get, parametersBuilder, builder)
 
 @KtorDocsDsl
 fun Route.get(
     builder: RouteBuilder<RouteParameters>.() -> Unit
-) = method("/", HttpMethod.Get, RouteParameters.emptyDelegate, builder)
+) = method("", HttpMethod.Get, RouteParameters.emptyDelegate, builder)
 /* --- GET end --- */
 
 /* --- POST start --- */
@@ -56,12 +56,12 @@ fun Route.post(
 fun <TParams : RouteParameters> Route.post(
     parametersBuilder: () -> TParams,
     builder: RouteBuilder<TParams>.() -> Unit
-) = method("/", HttpMethod.Post, parametersBuilder, builder)
+) = method("", HttpMethod.Post, parametersBuilder, builder)
 
 @KtorDocsDsl
 fun Route.post(
     builder: RouteBuilder<RouteParameters>.() -> Unit
-) = method("/", HttpMethod.Post, RouteParameters.emptyDelegate, builder)
+) = method("", HttpMethod.Post, RouteParameters.emptyDelegate, builder)
 /* --- POST end --- */
 
 /* --- PATCH start --- */
@@ -82,12 +82,12 @@ fun Route.patch(
 fun <TParams : RouteParameters> Route.patch(
     parametersBuilder: () -> TParams,
     builder: RouteBuilder<TParams>.() -> Unit
-) = method("/", HttpMethod.Patch, parametersBuilder, builder)
+) = method("", HttpMethod.Patch, parametersBuilder, builder)
 
 @KtorDocsDsl
 fun Route.patch(
     builder: RouteBuilder<RouteParameters>.() -> Unit
-) = method("/", HttpMethod.Patch, RouteParameters.emptyDelegate, builder)
+) = method("", HttpMethod.Patch, RouteParameters.emptyDelegate, builder)
 /* --- PATCH end --- */
 
 /* --- PUT start --- */
@@ -108,12 +108,12 @@ fun Route.put(
 fun <TParams : RouteParameters> Route.put(
     parametersBuilder: () -> TParams,
     builder: RouteBuilder<TParams>.() -> Unit
-) = method("/", HttpMethod.Put, parametersBuilder, builder)
+) = method("", HttpMethod.Put, parametersBuilder, builder)
 
 @KtorDocsDsl
 fun Route.put(
     builder: RouteBuilder<RouteParameters>.() -> Unit
-) = method("/", HttpMethod.Put, RouteParameters.emptyDelegate, builder)
+) = method("", HttpMethod.Put, RouteParameters.emptyDelegate, builder)
 /* --- PUT end --- */
 
 /* --- DELETE start --- */
@@ -134,12 +134,12 @@ fun Route.delete(
 fun <TParams : RouteParameters> Route.delete(
     parametersBuilder: () -> TParams,
     builder: RouteBuilder<TParams>.() -> Unit
-) = method("/", HttpMethod.Delete, parametersBuilder, builder)
+) = method("", HttpMethod.Delete, parametersBuilder, builder)
 
 @KtorDocsDsl
 fun Route.delete(
     builder: RouteBuilder<RouteParameters>.() -> Unit
-) = method("/", HttpMethod.Delete, RouteParameters.emptyDelegate, builder)
+) = method("", HttpMethod.Delete, RouteParameters.emptyDelegate, builder)
 /* --- DELETE end --- */
 
 /* --- HEAD start --- */
@@ -160,12 +160,12 @@ fun Route.head(
 fun <TParams : RouteParameters> Route.head(
     parametersBuilder: () -> TParams,
     builder: RouteBuilder<TParams>.() -> Unit
-) = method("/", HttpMethod.Head, parametersBuilder, builder)
+) = method("", HttpMethod.Head, parametersBuilder, builder)
 
 @KtorDocsDsl
 fun Route.head(
     builder: RouteBuilder<RouteParameters>.() -> Unit
-) = method("/", HttpMethod.Head, RouteParameters.emptyDelegate, builder)
+) = method("", HttpMethod.Head, RouteParameters.emptyDelegate, builder)
 /* --- HEAD end --- */
 
 /* --- OPTIONS start --- */
@@ -186,12 +186,12 @@ fun Route.options(
 fun <TParams : RouteParameters> Route.options(
     parametersBuilder: () -> TParams,
     builder: RouteBuilder<TParams>.() -> Unit
-) = method("/", HttpMethod.Options, parametersBuilder, builder)
+) = method("", HttpMethod.Options, parametersBuilder, builder)
 
 @KtorDocsDsl
 fun Route.options(
     builder: RouteBuilder<RouteParameters>.() -> Unit
-) = method("/", HttpMethod.Options, RouteParameters.emptyDelegate, builder)
+) = method("", HttpMethod.Options, RouteParameters.emptyDelegate, builder)
 /* --- OPTIONS end --- */
 
 @KtorDocsDsl
