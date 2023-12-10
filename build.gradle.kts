@@ -1,7 +1,7 @@
 plugins {
 
-    kotlin("jvm") version "1.9.20"
-    kotlin("plugin.serialization") version "1.9.20"
+    kotlin("jvm") version "1.9.21"
+    kotlin("plugin.serialization") version "1.9.21"
 
     id("maven-publish")
     id("co.uzzu.dotenv.gradle") version "2.0.0"
@@ -75,6 +75,22 @@ publishing {
                 create<HttpHeaderAuthentication>("header")
             }
 
+
+        }
+
+        maven {
+
+            name = "h4kt"
+            url = uri("https://repo.h4kt.dev/releases")
+
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+
+            credentials {
+                username = System.getenv("H4KT_REPO_USERNAME")
+                password = System.getenv("H4KT_REPO_PASSWORD")
+            }
 
         }
 
