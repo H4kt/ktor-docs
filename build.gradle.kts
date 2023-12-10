@@ -53,28 +53,14 @@ publishing {
     repositories {
 
         maven {
+
             name = "GitHubPackageRegistry"
             url = uri("https://maven.pkg.github.com/H4kt/ktor-docs")
+
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
             }
-        }
-
-        maven {
-
-            name = "IOTechGitLab"
-            url = uri("https://git.iotech.company/api/v4/projects/$gitlabProjectId/packages/maven")
-
-            credentials(HttpHeaderCredentials::class) {
-                name = "Private-Token"
-                value = System.getenv("GITLAB_ACCESS_TOKEN")
-            }
-
-            authentication {
-                create<HttpHeaderAuthentication>("header")
-            }
-
 
         }
 
