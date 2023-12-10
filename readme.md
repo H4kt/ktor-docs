@@ -5,3 +5,15 @@
 ## Roadmap
 - [ ] Support for custom authentications
 - [ ] Support for custom type converters
+
+## Usage
+build.gradle.kts
+```kotlin
+repositories {
+    maven("https://repo.h4kt.dev/releases")
+}
+
+dependencies {
+    implementation("dev.h4kt:ktor-docs:1.3.9")
+}
+```
