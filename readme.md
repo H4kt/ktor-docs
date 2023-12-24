@@ -5,6 +5,7 @@
 ## Roadmap
 - [ ] Support for custom authentications
 - [ ] Support for custom type converters
+- [ ] Support for poducing different versions of OpenAPI spec
 
 ## Usage
 build.gradle.kts
