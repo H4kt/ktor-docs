@@ -54,7 +54,9 @@ fun Application.module() {
 
 ### Usage
 In order for your route to be included in the resulting specification it has to be defined via an [extension function](https://github.com/H4kt/ktor-docs/blob/main/src/main/kotlin/dev/h4kt/ktorDocs/dsl/RoutingDsl.kt) provided by the Ktor docs library.
+
 **Make sure to import the extension function whenever attempting to use doucumentation capabilities, otherwise it won't work!**
+
 You can define and use path and query parameters by creating a class extending [RouteParameters](https://github.com/H4kt/ktor-docs/blob/main/src/main/kotlin/dev/h4kt/ktorDocs/types/parameters/RouteParameters.kt). Those parameters will be type safe and documented in the resulting spec.
 
 GreetingController.kt
