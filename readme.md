@@ -8,6 +8,8 @@
 - [ ] Support for poducing different versions of OpenAPI spec
 
 ## Usage
+
+### Add dependencies
 build.gradle.kts
 ```kotlin
 repositories {
@@ -16,5 +18,36 @@ repositories {
 
 dependencies {
     implementation("dev.h4kt:ktor-docs:1.3.9")
+}
+```
+
+### Plugin installation
+```kotlin
+fun Application.module() {
+
+    install(KtorDocs) {
+    
+        openApi {
+
+            version = "3"
+    
+            info {
+                version = "1"
+                title = "Template project docs"
+            }
+    
+            server {
+                url = "http://localhost:1337"
+                description = "Local development server"
+            }
+
+        }
+
+        swagger {
+            path = "/docs"
+        }
+
+    }
+    
 }
 ```
