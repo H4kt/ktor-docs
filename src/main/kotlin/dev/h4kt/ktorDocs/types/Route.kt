@@ -26,8 +26,6 @@ class RouteBuilder<TParams : RouteParameters> {
     internal var responsesBuilder = RouteResponsesBuilder()
     internal var handler: CallHandler<TParams> = {}
 
-    val nothing = typeInfo<Unit>()
-
     @KtorDocsDsl
     fun handle(handler: CallHandler<TParams>) {
         this.handler = handler
@@ -41,6 +39,8 @@ class RouteBuilder<TParams : RouteParameters> {
 }
 
 class RouteResponsesBuilder {
+
+    val nothing = typeInfo<Unit>()
 
     internal val responses = mutableMapOf<HttpStatusCode, TypeInfo>()
 
