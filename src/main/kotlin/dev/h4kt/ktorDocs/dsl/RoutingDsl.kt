@@ -2,15 +2,13 @@ package dev.h4kt.ktorDocs.dsl
 
 import dev.h4kt.ktorDocs.annotations.KtorDocsDsl
 import dev.h4kt.ktorDocs.extensions.documentation
-import dev.h4kt.ktorDocs.plugin.KtorDocs
 import dev.h4kt.ktorDocs.types.CallContext
-import dev.h4kt.ktorDocs.types.DocumentedRoute
-import dev.h4kt.ktorDocs.types.RouteBuilder
+import dev.h4kt.ktorDocs.types.route.DocumentedRoute
+import dev.h4kt.ktorDocs.types.route.RouteBuilder
 import dev.h4kt.ktorDocs.types.parameters.RouteParameters
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
-import io.ktor.util.reflect.*
 
 /* --- GET start --- */
 @KtorDocsDsl

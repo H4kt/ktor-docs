@@ -9,8 +9,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 @OptIn(ExperimentalSerializationApi::class)
 data class OpenApiRouteBody constructor(
-    @EncodeDefault val description: String = "",
-    val content: Map<SerialContentType, Schema> = emptyMap()
+    val content: Map<SerialContentType, Schema> = emptyMap(),
+    @EncodeDefault val description: String = ""
 ) {
 
     @Serializable

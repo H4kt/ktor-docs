@@ -1,6 +1,6 @@
 package dev.h4kt.ktorDocs.extensions
 
-import dev.h4kt.ktorDocs.types.DocumentedRoute
+import dev.h4kt.ktorDocs.types.route.DocumentedRoute
 import io.ktor.server.routing.*
 import io.ktor.util.*
 

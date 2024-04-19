@@ -1,6 +1,6 @@
 package dev.h4kt.ktorDocs
 
-import dev.h4kt.ktorDocs.types.DocumentedRoute
+import dev.h4kt.ktorDocs.types.route.DocumentedRoute
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteBody
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteParameter
@@ -41,18 +41,19 @@ internal fun DocumentedRoute.toOpenApiRoute(
         .mapKeys { (key) -> key.value.toString() }
         .mapValues { (_, value) ->
 
-            val content = if (value.type == Unit::class) {
+            val content = if (value.body.type == Unit::class) {
                 emptyMap()
             } else {
                 mapOf(
                     contentType to OpenApiRouteBody.Schema(
-                        schema = value.kotlinType!!.toOpenApiSchema()
+                        schema = value.body.kotlinType!!.toOpenApiSchema()
                     )
                 )
             }
 
             OpenApiRouteBody(
-                content = content
+                content = content,
+                description = value.description ?: ""
             )
         }
 
