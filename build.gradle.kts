@@ -1,18 +1,16 @@
 plugins {
 
-    kotlin("jvm") version "1.9.21"
-    kotlin("plugin.serialization") version "1.9.21"
+    alias(libs.plugins.kotlin)
+    alias(libs.plugins.kotlin.plugin.serialization)
+
+    alias(libs.plugins.dotenv)
 
     id("maven-publish")
-    id("co.uzzu.dotenv.gradle") version "2.0.0"
 
 }
 
 group = "dev.h4kt"
-version = "1.5.0"
-
-val ktorVersion: String by project
-val gitlabProjectId: String by project
+version = "1.6.0"
 
 repositories {
     mavenCentral()
@@ -20,22 +18,20 @@ repositories {
 
 dependencies {
 
-    implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-server-auth:$ktorVersion")
-    implementation("io.ktor:ktor-server-swagger:$ktorVersion")
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.swagger)
 
-    implementation("ch.qos.logback:logback-classic:1.4.11")
+    implementation(libs.logback)
 
-    api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+    implementation(libs.kotlinx.datetime)
 
-    api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    api("com.charleskorn.kaml:kaml:0.55.0")
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kaml)
 
-    testImplementation("io.ktor:ktor-server-test-host:$ktorVersion")
-    testImplementation("io.ktor:ktor-client-cio:$ktorVersion")
-
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.10")
+    testImplementation(libs.ktor.server.testHost)
+    testImplementation(kotlin("test"))
 
 }
 

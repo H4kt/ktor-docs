@@ -1,7 +1,7 @@
 package dev.h4kt.ktorDocs
 
 import dev.h4kt.ktorDocs.annotations.UnsafeAPI
-import dev.h4kt.ktorDocs.mock.MockApplicationCall
+import dev.h4kt.ktorDocs.mock.MockPipelineCall
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSecurityScheme
 import dev.h4kt.ktorDocs.utils.getInternalField
 import io.ktor.server.application.*
@@ -35,7 +35,7 @@ private fun OAuthAuthenticationProvider.toOpenApiOAuth2SecurityScheme(
     application: Application
 ): OpenApiSecurityScheme? {
 
-    val call = MockApplicationCall(application)
+    val call = MockPipelineCall(application)
     val providerLookup = getInternalField<ApplicationCall.() -> OAuthServerSettings?>("providerLookup")
 
     val serverSettings = providerLookup(call) as? OAuthServerSettings.OAuth2ServerSettings

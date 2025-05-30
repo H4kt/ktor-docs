@@ -1,6 +1,10 @@
 package dev.h4kt.ktorDocs.plugin
 
-import com.charleskorn.kaml.*
+import com.charleskorn.kaml.PolymorphismStyle
+import com.charleskorn.kaml.SingleLineStringStyle
+import com.charleskorn.kaml.Yaml
+import com.charleskorn.kaml.YamlConfiguration
+import com.charleskorn.kaml.encodeToStream
 import dev.h4kt.ktorDocs.annotations.UnsafeAPI
 import dev.h4kt.ktorDocs.extensions.documentation
 import dev.h4kt.ktorDocs.extensions.isDocumented
@@ -11,12 +15,26 @@ import dev.h4kt.ktorDocs.types.openapi.OpenApiSpec
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpecPaths
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiComponents
 import dev.h4kt.ktorDocs.utils.getInternalField
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.application.hooks.*
-import io.ktor.server.auth.*
-import io.ktor.server.plugins.swagger.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpMethod
+import io.ktor.server.application.Application
+import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.createApplicationPlugin
+import io.ktor.server.application.hooks.MonitoringEvent
+import io.ktor.server.application.pluginOrNull
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.AuthenticationConfig
+import io.ktor.server.auth.AuthenticationProvider
+import io.ktor.server.auth.AuthenticationRouteSelector
+import io.ktor.server.plugins.swagger.SwaggerConfig
+import io.ktor.server.plugins.swagger.swaggerUI
+import io.ktor.server.routing.HttpAcceptRouteSelector
+import io.ktor.server.routing.HttpHeaderRouteSelector
+import io.ktor.server.routing.HttpMethodRouteSelector
+import io.ktor.server.routing.HttpMultiAcceptRouteSelector
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.RoutingNode
+import io.ktor.server.routing.TrailingSlashRouteSelector
+import io.ktor.server.routing.routing
 import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.time.measureTime
@@ -223,7 +241,7 @@ private fun Application.gatherDocumentedRoutes(): Map<String, Map<HttpMethod, Ro
 }
 
 private fun traverseChildren(
-    currentRoute: Route,
+    currentRoute: RoutingNode,
     currentPath: String,
     authentications: Set<String>,
     result: MutableMap<String, MutableMap<HttpMethod, RouteWithAuthentications>>
