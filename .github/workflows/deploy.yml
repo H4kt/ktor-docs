@@ -18,23 +18,22 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up JDK 11
-        uses: actions/setup-java@v3
+      - name: 🛠️ Set up JDK 11
+        uses: actions/setup-java@v4
         with:
           java-version: '11'
-          distribution: 'temurin'
+          distribution: 'jetbrains'
 
-      - name: Run tests
-        uses: gradle/gradle-build-action@v2.9.0
-        with:
-          arguments: test
+      - name: 🛠️Setup gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: 🛠️ Run tests
+        run: ./gradlew test
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish packages
-        uses: gradle/gradle-build-action@v2.9.0
-        with:
-          arguments: publish
+      - name: 🚀 Publish packages
+        run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           H4KT_REPO_USERNAME: ${{ secrets.H4KT_REPO_USERNAME }}
