@@ -3,8 +3,17 @@ name: deploy
 on:
   push:
     branches: ["main"]
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'build.gradle.kts'
+
   pull_request:
     branches: ["main"]
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'build.gradle.kts'
 
 jobs:
   publish:
