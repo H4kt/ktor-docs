@@ -1,6 +1,6 @@
 # ktor-docs
 [![Deploy](https://github.com/H4kt/ktor-docs/actions/workflows/deploy.yml/badge.svg)](https://github.com/H4kt/ktor-docs/actions/workflows/deploy.yml)
-![Kotlin](https://img.shields.io/badge/kotlin-1.9.21-purple?logo=Kotlin&label=Kotlin)
+![Kotlin](https://img.shields.io/badge/kotlin-2.1.21-purple?logo=Kotlin&label=Kotlin)
 
 ## Roadmap
 - [ ] Support for custom authentications
@@ -16,7 +16,7 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.h4kt:ktor-docs:1.3.9")
+    implementation("dev.h4kt:ktor-docs:1.6.0")
 }
 ```
 
