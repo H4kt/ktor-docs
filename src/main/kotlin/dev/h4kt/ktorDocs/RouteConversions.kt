@@ -1,14 +1,19 @@
 package dev.h4kt.ktorDocs
 
-import dev.h4kt.ktorDocs.types.route.DocumentedRoute
+import dev.h4kt.ktorDocs.plugin.TypeMap
+import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteBody
 import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteParameter
 import dev.h4kt.ktorDocs.types.parameters.RouteParameter
-import io.ktor.http.*
+import dev.h4kt.ktorDocs.types.route.DocumentedRoute
+import dev.h4kt.ktorDocs.utils.ktype.isList
+import io.ktor.http.ContentType
+import kotlin.reflect.KType
 
 internal fun DocumentedRoute.toOpenApiRoute(
-    authentications: Set<String>
+    authentications: Set<String>,
+    typeMap: TypeMap
 ): OpenApiRoute {
 
     val parameters = mutableListOf<OpenApiRouteParameter>()
@@ -26,13 +31,10 @@ internal fun DocumentedRoute.toOpenApiRoute(
 
     val requestBody = requestBody
         ?.kotlinType
-        ?.toOpenApiSchema()
-        ?.let {
+        ?.let { kType ->
             OpenApiRouteBody(
                 content = mapOf(
-                    contentType to OpenApiRouteBody.Schema(
-                        schema = it
-                    )
+                    contentType to OpenApiRouteBody.Schema(kType.toReference(typeMap))
                 )
             )
         }
@@ -46,7 +48,7 @@ internal fun DocumentedRoute.toOpenApiRoute(
             } else {
                 mapOf(
                     contentType to OpenApiRouteBody.Schema(
-                        schema = value.body.kotlinType!!.toOpenApiSchema()
+                        schema = value.body.kotlinType!!.toReference(typeMap)
                     )
                 )
             }
@@ -65,6 +67,21 @@ internal fun DocumentedRoute.toOpenApiRoute(
         requestBody = requestBody,
         responses = responses
     )
+}
+
+private fun KType.toReference(
+    typeMap: TypeMap
+): OpenApiSchema {
+
+    val schema = when {
+        isList -> OpenApiSchema.Array(
+            items = typeMap.getTypeReferenceOrRegister(arguments.first().type!!),
+            nullable = isMarkedNullable
+        )
+        else -> typeMap.getTypeReferenceOrRegister(this)
+    }
+
+    return schema
 }
 
 private fun RouteParameter<*>.toOpenApiRouteParameter(

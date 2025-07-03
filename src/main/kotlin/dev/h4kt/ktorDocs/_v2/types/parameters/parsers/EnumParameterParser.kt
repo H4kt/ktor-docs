@@ -1,8 +1,8 @@
 @file:Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 
-package dev.h4kt.ktorDocs.types.parameters.parsers
+package dev.h4kt.ktorDocs._v2.types.parameters.parsers
 
-import io.ktor.http.*
+import io.ktor.http.Parameters
 import kotlin.reflect.KClass
 import java.lang.Enum as JavaEnum
 

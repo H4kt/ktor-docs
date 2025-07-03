@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.types.parameters
+package dev.h4kt.ktorDocs._v2.types.parameters
 
 class RouteParameterBuilder {
     var name = ""

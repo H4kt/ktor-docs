@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.types.parameters
+package dev.h4kt.ktorDocs._v2.types.parameters
 
 import dev.h4kt.ktorDocs.annotations.KtorDocsDsl
 import dev.h4kt.ktorDocs.types.parameters.parsers.EnumParameterParser
@@ -11,9 +11,14 @@ import dev.h4kt.ktorDocs.types.parameters.parsers.datetime.LocalDateTimeParamete
 import dev.h4kt.ktorDocs.types.parameters.parsers.primitives.IntParameterParser
 import dev.h4kt.ktorDocs.types.parameters.parsers.primitives.LongParameterParser
 import dev.h4kt.ktorDocs.types.parameters.parsers.primitives.StringParameterParser
-import io.ktor.http.*
-import io.ktor.util.reflect.*
-import kotlin.reflect.KClass
+import io.ktor.http.Parameters
+import io.ktor.util.reflect.TypeInfo
+import io.ktor.util.reflect.typeInfo
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import java.util.UUID
+import kotlin.time.Duration
 
 class RouteParametersContainer : Iterable<RouteParameter<*>> {
 
@@ -30,6 +35,12 @@ class RouteParametersContainer : Iterable<RouteParameter<*>> {
     ) = optionalParameter(configure, StringParameterParser)
 
     @KtorDocsDsl
+    fun optionalString(
+        defaultValue: String,
+        configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, StringParameterParser, defaultValue)
+
+    @KtorDocsDsl
     fun int(
         configure: RouteParameterBuilder.() -> Unit
     ) = parameter(configure, IntParameterParser)
@@ -38,6 +49,12 @@ class RouteParametersContainer : Iterable<RouteParameter<*>> {
     fun optionalInt(
         configure: RouteParameterBuilder.() -> Unit
     ) = optionalParameter(configure, IntParameterParser)
+
+    @KtorDocsDsl
+    fun optionalInt(
+        defaultValue: Int,
+        configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, IntParameterParser, defaultValue)
 
     @KtorDocsDsl
     fun long(
@@ -50,14 +67,26 @@ class RouteParametersContainer : Iterable<RouteParameter<*>> {
     ) = optionalParameter(configure, LongParameterParser)
 
     @KtorDocsDsl
+    fun optionalLong(
+        defaultValue: Long,
+        configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, LongParameterParser, defaultValue)
+
+    @KtorDocsDsl
     fun uuid(
         configure: RouteParameterBuilder.() -> Unit
     ) = parameter(configure, UUIDParameterParser)
 
     @KtorDocsDsl
-    fun optionalUUID(
+    fun optionalUuid(
         configure: RouteParameterBuilder.() -> Unit
     ) = optionalParameter(configure, UUIDParameterParser)
+
+    @KtorDocsDsl
+    fun optionalUuid(
+        defaultValue: UUID,
+        configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, UUIDParameterParser, defaultValue)
 
     @KtorDocsDsl
     fun duration(
@@ -70,6 +99,12 @@ class RouteParametersContainer : Iterable<RouteParameter<*>> {
     ) = optionalParameter(configure, DurationParameterParser)
 
     @KtorDocsDsl
+    fun optionalDuration(
+        defaultValue: Duration,
+        configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, DurationParameterParser, defaultValue)
+
+    @KtorDocsDsl
     fun date(
         configure: RouteParameterBuilder.() -> Unit
     ) = parameter(configure, LocalDateParameterParser)
@@ -78,6 +113,12 @@ class RouteParametersContainer : Iterable<RouteParameter<*>> {
     fun optionalDate(
         configure: RouteParameterBuilder.() -> Unit
     ) = optionalParameter(configure, LocalDateParameterParser)
+
+    @KtorDocsDsl
+    fun optionalDate(
+        defaultValue: LocalDate,
+        configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, LocalDateParameterParser, defaultValue)
 
     @KtorDocsDsl
     fun datetime(
@@ -90,6 +131,12 @@ class RouteParametersContainer : Iterable<RouteParameter<*>> {
     ) = optionalParameter(configure, LocalDateTimeParameterParser)
 
     @KtorDocsDsl
+    fun optionalDateTime(
+        defaultValue: LocalDateTime,
+        configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, LocalDateTimeParameterParser, defaultValue)
+
+    @KtorDocsDsl
     fun instant(
         configure: RouteParameterBuilder.() -> Unit
     ) = parameter(configure, InstantParameterParser)
@@ -99,41 +146,99 @@ class RouteParametersContainer : Iterable<RouteParameter<*>> {
         configure: RouteParameterBuilder.() -> Unit
     ) = optionalParameter(configure, InstantParameterParser)
 
-    inline fun <reified T : Enum<T>> enum(
+    @KtorDocsDsl
+    fun optionalInstant(
+        defaultValue: Instant,
         configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, InstantParameterParser, defaultValue)
+
+    inline fun <reified T : Enum<T>> enum(
+        noinline configure: RouteParameterBuilder.() -> Unit
     ) = parameter(configure, EnumParameterParser(T::class))
 
     inline fun <reified T : Enum<T>> optionalEnum(
-        configure: RouteParameterBuilder.() -> Unit
+        noinline configure: RouteParameterBuilder.() -> Unit
     ) = optionalParameter(configure, EnumParameterParser(T::class))
 
-    inline fun <reified T : Any> parameter(
+    inline fun <reified T : Enum<T>> optionalEnum(
+        defaultValue: T,
+        noinline configure: RouteParameterBuilder.() -> Unit
+    ) = optionalDefaultedParameter(configure, EnumParameterParser(T::class), defaultValue)
+
+    fun <T : Any> parameter(
         configure: RouteParameterBuilder.() -> Unit,
-        parser: ParameterParser<T>
+        parser: ParameterParser<T>,
+        typeInfo: TypeInfo
     ): RequiredRouteParameter<T> {
         val settings = RouteParameterBuilder().apply(configure)
         return RequiredRouteParameter(
             name = settings.name,
-            typeInfo = typeInfo<T>(),
+            typeInfo = typeInfo,
+            description = settings.description,
+            parser = parser
+        ).also(::add)
+    }
+
+    inline fun <reified T : Any> parameter(
+        noinline configure: RouteParameterBuilder.() -> Unit,
+        parser: ParameterParser<T>
+    ) = parameter(
+        configure = configure,
+        parser = parser,
+        typeInfo = typeInfo<T>()
+    )
+
+    fun <T : Any> optionalParameter(
+        configure: RouteParameterBuilder.() -> Unit,
+        parser: ParameterParser<T>,
+        typeInfo: TypeInfo
+    ): OptionalRouteParameter<T> {
+        val settings = RouteParameterBuilder().apply(configure)
+        return OptionalRouteParameter(
+            name = settings.name,
+            typeInfo = typeInfo,
             description = settings.description,
             parser = parser
         ).also(::add)
     }
 
     inline fun <reified T : Any> optionalParameter(
-        configure: RouteParameterBuilder.() -> Unit,
+        noinline configure: RouteParameterBuilder.() -> Unit,
         parser: ParameterParser<T>
-    ): OptionalRouteParameter<T> {
+    ) = optionalParameter(
+        configure = configure,
+        parser = parser,
+        typeInfo = typeInfo<T>()
+    )
+
+    fun <T : Any> optionalDefaultedParameter(
+        configure: RouteParameterBuilder.() -> Unit,
+        parser: ParameterParser<T>,
+        defaultValue: T,
+        typeInfo: TypeInfo
+    ): OptionalDefaultedRouteParameter<T> {
         val settings = RouteParameterBuilder().apply(configure)
-        return OptionalRouteParameter(
+        return OptionalDefaultedRouteParameter(
             name = settings.name,
-            typeInfo = typeInfo<T>(),
+            typeInfo = typeInfo,
             description = settings.description,
-            parser = parser
+            parser = parser,
+            defaultValue = defaultValue
         ).also(::add)
     }
 
-    fun add(parameter: RouteParameter<*>) {
+    inline fun <reified T : Any> optionalDefaultedParameter(
+        noinline configure: RouteParameterBuilder.() -> Unit,
+        parser: ParameterParser<T>,
+        defaultValue: T
+    ) = optionalDefaultedParameter(
+        configure = configure,
+        parser = parser,
+        defaultValue = defaultValue,
+        typeInfo = typeInfo<T>()
+    )
+
+    private fun add(parameter: RouteParameter<*>) {
         parameters += parameter
     }
 

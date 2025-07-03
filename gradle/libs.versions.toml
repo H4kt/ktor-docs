@@ -6,6 +6,7 @@ kotlinx-serialization = "1.8.1"
 kaml = "0.55.0"
 logback = "1.5.13"
 dotenv = "4.0.0"
+kotlin-openapi-tools = "0.1.0"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -24,3 +25,5 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" }
 
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+
+kotlinOpenApiTools = { module = "dev.h4kt:kotlin-openapi-tools", version.ref = "kotlin-openapi-tools" }

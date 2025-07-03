@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.types.parameters.parsers
+package dev.h4kt.ktorDocs._v2.types.parameters.parsers
 
 import io.ktor.http.*
 import java.util.*

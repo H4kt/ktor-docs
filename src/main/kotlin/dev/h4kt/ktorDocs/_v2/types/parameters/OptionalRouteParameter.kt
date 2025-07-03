@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.types.parameters
+package dev.h4kt.ktorDocs._v2.types.parameters
 
 import dev.h4kt.ktorDocs.types.parameters.parsers.ParameterParser
 import io.ktor.http.*
@@ -6,7 +6,7 @@ import io.ktor.server.plugins.*
 import io.ktor.util.reflect.*
 import kotlin.reflect.KProperty
 
-class OptionalRouteParameter<T : Any>(
+open class OptionalRouteParameter<T : Any>(
     override val name: String,
     override val typeInfo: TypeInfo,
     override val description: String,
