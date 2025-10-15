@@ -2,6 +2,9 @@
 [![Deploy](https://github.com/H4kt/ktor-docs/actions/workflows/deploy.yml/badge.svg)](https://github.com/H4kt/ktor-docs/actions/workflows/deploy.yml)
 ![Kotlin](https://img.shields.io/badge/kotlin-2.1.21-purple?logo=Kotlin&label=Kotlin)
 
+## ⚠️ Deprecation notice ⚠️
+This project is now superseded by the [official way](https://ktor.io/docs/openapi-spec-generation.html) of generating OpenAPI docs
+
 ## Roadmap
 - [ ] Support for custom authentications
 - [ ] Support for custom type converters
