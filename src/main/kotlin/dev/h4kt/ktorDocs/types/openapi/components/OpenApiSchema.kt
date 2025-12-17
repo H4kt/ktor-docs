@@ -75,6 +75,7 @@ sealed interface OpenApiSchema {
     @SerialName("array")
     data class Array(
         val items: OpenApiSchema,
+        val uniqueItems: kotlin.Boolean = false,
         override val title: kotlin.String = "",
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false

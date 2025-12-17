@@ -58,15 +58,19 @@ fun KType.toOpenApiSchema(
     return when {
         type in builtInTypes -> builtInTypes[type]!!
         type.isSubclassOf(Enum::class) -> toOpenApiEnum()
-        type.isSubclassOf(List::class) -> toOpenApiArray(parentTypes)
+        type.isSubclassOf(Collection::class) || type.isSubclassOf(Array::class) -> toOpenApiArray(
+            parentTypes = parentTypes,
+            uniqueItems = type.isSubclassOf(Set::class)
+        )
+        // TODO: Map<K, V> support
         type.isSealed -> toOpenApiOneOf(parentTypes)
         else -> toOpenApiObject(parentTypes)
     }
-
 }
 
 private fun KType.toOpenApiArray(
-    parentTypes: List<KType>
+    parentTypes: List<KType>,
+    uniqueItems: Boolean
 ): OpenApiSchema.Array {
     return OpenApiSchema.Array(
         items = arguments.first().type!!.toOpenApiSchema(parentTypes)
