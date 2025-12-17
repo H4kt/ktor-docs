@@ -6,8 +6,19 @@ import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
 import com.charleskorn.kaml.encodeToStream
 import dev.h4kt.ktorDocs.annotations.UnsafeAPI
+import dev.h4kt.ktorDocs.generation.converters.CollectionTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.DataClassTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.EnumTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.JavaUuidTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.KotlinUuidTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.KotlinXDateTimeTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.PrimitiveTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.SealedTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.TypeConverter
 import dev.h4kt.ktorDocs.extensions.documentation
 import dev.h4kt.ktorDocs.extensions.isDocumented
+import dev.h4kt.ktorDocs.generation.SchemaGenerator
+import dev.h4kt.ktorDocs.generation.converters.KotlinTimeTypeConverter
 import dev.h4kt.ktorDocs.toOpenApiRoute
 import dev.h4kt.ktorDocs.toOpenApiSecurityScheme
 import dev.h4kt.ktorDocs.types.openapi.OpenApiServer
@@ -86,12 +97,28 @@ class KtorDocsConfig {
 
     var documentationFilePath: String = "documentation.yml"
 
+    internal val typeConverters = mutableListOf(
+        CollectionTypeConverter(),
+        DataClassTypeConverter(),
+        EnumTypeConverter(),
+        JavaUuidTypeConverter(),
+        KotlinTimeTypeConverter(),
+        KotlinUuidTypeConverter(),
+        KotlinXDateTimeTypeConverter(),
+        PrimitiveTypeConverter(),
+        SealedTypeConverter()
+    )
+
     fun swagger(configure: Swagger.() -> Unit) {
         swagger.apply(configure)
     }
 
     fun openApi(configure: OpenApi.() -> Unit) {
         openApi.apply(configure)
+    }
+
+    fun typeConverters(vararg typeConverters: TypeConverter) {
+        this.typeConverters.addAll(typeConverters)
     }
 
 }
@@ -124,16 +151,13 @@ val KtorDocs = createApplicationPlugin(
         logger.info("Generating OpenAPI spec...")
 
         val openApiSpecGenerationTime = measureTime {
-            try {
-                application.generateOpenApiSpec(
-                    config = config.openApi,
-                    outputFilePath = config.documentationFilePath,
-                    authenticationProviders = authenticationProviders.value,
-                    routes = routes.value
-                )
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
+            application.generateOpenApiSpec(
+                typeConverters = config.typeConverters,
+                config = config.openApi,
+                outputFilePath = config.documentationFilePath,
+                authenticationProviders = authenticationProviders.value,
+                routes = routes.value
+            )
         }
 
         logger.info("OpenAPI spec generation took $openApiSpecGenerationTime")
@@ -155,23 +179,32 @@ val KtorDocs = createApplicationPlugin(
 }
 
 private fun Application.generateOpenApiSpec(
+    typeConverters: List<TypeConverter>,
     config: KtorDocsConfig.OpenApi,
     outputFilePath: String,
     authenticationProviders: Map<String, AuthenticationProvider>,
     routes: Map<String, Map<HttpMethod, RouteWithAuthentications>>
 ) {
 
+    val schemaGenerator = SchemaGenerator(typeConverters)
+
     val tags = mutableSetOf<String>()
 
-    val paths: OpenApiSpecPaths = routes.mapValues { (_, value) ->
-        value.mapValues mapRoutes@{ (_, routeWithAuthentications) ->
+    val paths: OpenApiSpecPaths = routes.mapValues { (path, value) ->
+        value.mapValues mapRoutes@{ (method, routeWithAuthentications) ->
 
             val (authentications, route) = routeWithAuthentications
 
             val documentation = route.documentation
             tags.addAll(documentation.tags)
 
-            return@mapRoutes documentation.toOpenApiRoute(authentications)
+            return@mapRoutes documentation.toOpenApiRoute(
+                logger,
+                schemaGenerator,
+                method,
+                path,
+                authentications
+            )
         }
     }
 
@@ -192,6 +225,7 @@ private fun Application.generateOpenApiSpec(
         servers = config.servers,
         paths = paths,
         components = OpenApiComponents(
+            schemas = schemaGenerator.generate(),
             securitySchemes = securitySchemes.takeIf { it.isNotEmpty() } ?: emptyMap()
         )
     )

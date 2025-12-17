@@ -1,3 +1,4 @@
+import dev.h4kt.ktorDocs.annotations.DocsName
 import dev.h4kt.ktorDocs.dsl.get
 import dev.h4kt.ktorDocs.dsl.post
 import dev.h4kt.ktorDocs.plugin.KtorDocs

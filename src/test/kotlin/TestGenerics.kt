@@ -4,13 +4,13 @@ import io.ktor.server.testing.*
 import io.ktor.util.reflect.*
 import org.junit.jupiter.api.Test
 
-class Foo<T : Any>(
+data class Foo<T : Any>(
     val bar: Bar<T>,
     val bar2: Bar<String>
 )
 
-class Bar<T : Any>(
-    val value: List<T>
+data class Bar<D : Any>(
+    val value: List<D>
 )
 
 class TestGenerics {

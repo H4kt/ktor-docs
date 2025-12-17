@@ -20,6 +20,7 @@ sealed interface OpenApiSchema {
         val format: kotlin.String? = null,
         val pattern: kotlin.String? = null,
         val enum: List<kotlin.String>? = null,
+        val const: kotlin.String? = null,
         override val title: kotlin.String = "",
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false
@@ -58,7 +59,8 @@ sealed interface OpenApiSchema {
     ) : TypedSchema {
 
         enum class Format {
-            INT32, INT64
+            INT8, INT16, INT32, INT64,
+            UINT8, UINT16, UINT32, UINT64
         }
 
     }
@@ -106,5 +108,18 @@ sealed interface OpenApiSchema {
         override val nullable: kotlin.Boolean = false,
         override val deprecated: kotlin.Boolean = false
     ) : OpenApiSchema
+
+    fun asDeprecated(isDeprecated: kotlin.Boolean): OpenApiSchema {
+        return when (this) {
+            is OneOf -> copy(deprecated = isDeprecated)
+            is Reference -> copy(deprecated = isDeprecated)
+            is Array -> copy(deprecated = isDeprecated)
+            is Boolean -> copy(deprecated = isDeprecated)
+            is Integer -> copy(deprecated = isDeprecated)
+            is Number -> copy(deprecated = isDeprecated)
+            is Object -> copy(deprecated = isDeprecated)
+            is String -> copy(deprecated = isDeprecated)
+        }
+    }
 
 }
