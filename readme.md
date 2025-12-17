@@ -6,8 +6,8 @@
 This project is now superseded by the [official way](https://ktor.io/docs/openapi-spec-generation.html) of generating OpenAPI docs
 
 ## Roadmap
-- [ ] Support for custom authentications
-- [ ] Support for custom type converters
+- [x] Support for custom authentications
+- [x] Support for custom type converters
 
 ## Usage
 
