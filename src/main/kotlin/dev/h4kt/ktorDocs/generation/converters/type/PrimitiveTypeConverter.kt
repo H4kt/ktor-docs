@@ -1,10 +1,10 @@
-package dev.h4kt.ktorDocs.generation.converters
+package dev.h4kt.ktorDocs.generation.converters.type
 
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 
-class PrimitiveTypeConverter : TypeConverter() {
+class PrimitiveTypeConverter : TypeConverter(priority = 900) {
 
     private val primitiveTypes = listOf(
         String::class,
@@ -22,9 +22,7 @@ class PrimitiveTypeConverter : TypeConverter() {
         Boolean::class
     )
 
-    override val priority = 900
-
-    override fun doesSupport(type: KType): Boolean {
+    override fun canConvert(type: KType): Boolean {
         return type.classifierKClass in primitiveTypes
     }
 

@@ -2,7 +2,7 @@ package dev.h4kt.ktorDocs.generation
 
 import dev.h4kt.ktorDocs.annotations.DocsName
 import dev.h4kt.ktorDocs.exceptions.ClashingNamesException
-import dev.h4kt.ktorDocs.generation.converters.TypeConverter
+import dev.h4kt.ktorDocs.generation.converters.type.TypeConverter
 import dev.h4kt.ktorDocs.generation.results.SchemaGenerationResult
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import kotlin.reflect.KClass
@@ -10,11 +10,13 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.findAnnotation
 
 internal class SchemaGenerator(
-    private val converters: List<TypeConverter>
+    converters: List<TypeConverter>
 ) {
 
+    private val converters = converters.sortedByDescending { it.priority }
     private val typeMap = linkedMapOf<TypeMapKey, Triple<String, OpenApiSchema.Reference, OpenApiSchema>>()
 
+    // TODO: handle self-referencing types
     fun generateSchema(
         type: KType,
         parentTypes: List<KType> = emptyList()
@@ -33,8 +35,7 @@ internal class SchemaGenerator(
         }
 
         val converter = converters
-            .filter { it.doesSupport(type) }
-            .maxByOrNull { it.priority }
+            .firstOrNull { it.canConvert(type) }
             ?: return SchemaGenerationResult.UnsupportedType(type)
 
         val schema = try {

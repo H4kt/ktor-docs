@@ -1,16 +1,16 @@
-package dev.h4kt.ktorDocs.generation.converters
+package dev.h4kt.ktorDocs.generation.converters.type
 
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
-import java.util.*
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-class JavaUuidTypeConverter : TypeConverter() {
+@OptIn(ExperimentalUuidApi::class)
+class KotlinUuidTypeConverter : TypeConverter(priority = 900) {
 
-    override val priority = 900
-
-    override fun doesSupport(type: KType): Boolean {
-        return type.classifierKClass == UUID::class
+    override fun canConvert(type: KType): Boolean {
+        return type.classifierKClass == Uuid::class
     }
 
     override fun convert(

@@ -18,5 +18,3 @@ sealed interface SchemaGenerationResult {
         val schema: OpenApiSchema
     ) : SchemaGenerationResult
 }
-
-fun SchemaGenerationResult.isError() = this is Error

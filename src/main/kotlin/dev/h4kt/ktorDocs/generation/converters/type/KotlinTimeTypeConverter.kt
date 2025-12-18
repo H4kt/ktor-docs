@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.generation.converters
+package dev.h4kt.ktorDocs.generation.converters.type
 
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import kotlin.reflect.KClass
@@ -6,16 +6,14 @@ import kotlin.reflect.KType
 import kotlin.time.Duration
 import kotlin.time.Instant
 
-class KotlinTimeTypeConverter : TypeConverter() {
-
-    override val priority = 900
+class KotlinTimeTypeConverter : TypeConverter(priority = 900) {
 
     private val supportedTypes = listOf(
         Instant::class,
         Duration::class
     )
 
-    override fun doesSupport(type: KType): Boolean {
+    override fun canConvert(type: KType): Boolean {
         return type.classifierKClass in supportedTypes
     }
 

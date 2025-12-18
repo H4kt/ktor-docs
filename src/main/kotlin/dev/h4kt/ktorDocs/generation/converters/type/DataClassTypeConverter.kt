@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.generation.converters
+package dev.h4kt.ktorDocs.generation.converters.type
 
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -10,11 +10,9 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 
-class DataClassTypeConverter : TypeConverter() {
+class DataClassTypeConverter : TypeConverter(priority = 100) {
 
-    override val priority = 1
-
-    override fun doesSupport(type: KType): Boolean {
+    override fun canConvert(type: KType): Boolean {
         return type.classifierKClass.isData
     }
 
@@ -25,7 +23,7 @@ class DataClassTypeConverter : TypeConverter() {
         convertDownstream: (type: KType) -> OpenApiSchema
     ): OpenApiSchema {
 
-        val properties = linkedMapOf<String, OpenApiSchema>()
+        val properties = mutableMapOf<String, OpenApiSchema>()
 
         val required = classifier.primaryConstructor
             ?.parameters
@@ -47,6 +45,7 @@ class DataClassTypeConverter : TypeConverter() {
             required.add(0, sealedTypeDiscriminator)
         }
 
+        // TODO: might wanna use primary constructor parameters instead
         classifier.memberProperties.forEach { property ->
             val isDeprecated = property.findAnnotation<Deprecated>() != null
 

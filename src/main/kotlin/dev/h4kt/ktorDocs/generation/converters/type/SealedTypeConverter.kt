@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.generation.converters
+package dev.h4kt.ktorDocs.generation.converters.type
 
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -7,11 +7,9 @@ import kotlin.reflect.KType
 import kotlin.reflect.full.createType
 
 @OptIn(ExperimentalSerializationApi::class)
-class SealedTypeConverter : TypeConverter() {
+class SealedTypeConverter : TypeConverter(priority = 1000) {
 
-    override val priority = 1000
-
-    override fun doesSupport(type: KType): Boolean {
+    override fun canConvert(type: KType): Boolean {
         return type.classifierKClass.isSealed
     }
 

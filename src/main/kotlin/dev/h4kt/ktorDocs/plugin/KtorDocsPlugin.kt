@@ -6,26 +6,20 @@ import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
 import com.charleskorn.kaml.encodeToStream
 import dev.h4kt.ktorDocs.annotations.UnsafeAPI
-import dev.h4kt.ktorDocs.generation.converters.CollectionTypeConverter
-import dev.h4kt.ktorDocs.generation.converters.DataClassTypeConverter
-import dev.h4kt.ktorDocs.generation.converters.EnumTypeConverter
-import dev.h4kt.ktorDocs.generation.converters.JavaUuidTypeConverter
-import dev.h4kt.ktorDocs.generation.converters.KotlinUuidTypeConverter
-import dev.h4kt.ktorDocs.generation.converters.KotlinXDateTimeTypeConverter
-import dev.h4kt.ktorDocs.generation.converters.PrimitiveTypeConverter
-import dev.h4kt.ktorDocs.generation.converters.SealedTypeConverter
-import dev.h4kt.ktorDocs.generation.converters.TypeConverter
 import dev.h4kt.ktorDocs.extensions.documentation
 import dev.h4kt.ktorDocs.extensions.isDocumented
+import dev.h4kt.ktorDocs.extensions.nameOrDefault
 import dev.h4kt.ktorDocs.generation.SchemaGenerator
-import dev.h4kt.ktorDocs.generation.converters.KotlinTimeTypeConverter
-import dev.h4kt.ktorDocs.toOpenApiRoute
-import dev.h4kt.ktorDocs.toOpenApiSecurityScheme
-import dev.h4kt.ktorDocs.types.openapi.OpenApiServer
+import dev.h4kt.ktorDocs.generation.results.SchemaGenerationResult
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpec
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpecPaths
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiComponents
+import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRoute
+import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteBody
+import dev.h4kt.ktorDocs.types.openapi.route.OpenApiRouteParameter
+import dev.h4kt.ktorDocs.types.route.DocumentedRoute
 import dev.h4kt.ktorDocs.utils.getInternalField
+import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
@@ -36,7 +30,6 @@ import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.AuthenticationConfig
 import io.ktor.server.auth.AuthenticationProvider
 import io.ktor.server.auth.AuthenticationRouteSelector
-import io.ktor.server.plugins.swagger.SwaggerConfig
 import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.routing.HttpAcceptRouteSelector
 import io.ktor.server.routing.HttpHeaderRouteSelector
@@ -46,6 +39,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.RoutingNode
 import io.ktor.server.routing.TrailingSlashRouteSelector
 import io.ktor.server.routing.routing
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import kotlin.time.measureTime
@@ -55,77 +49,9 @@ private typealias RouteWithAuthentications = Pair<Set<String>, Route>
 
 private val logger = LoggerFactory.getLogger("KtorDocsPlugin")
 
-class KtorDocsConfig {
-
-    class Swagger {
-
-        var isEnabled = true
-        var path = "swagger"
-
-        internal var config: SwaggerConfig.() -> Unit = {}
-
-        fun config(configure: SwaggerConfig.() -> Unit) {
-            config = configure
-        }
-
-    }
-
-    class OpenApi {
-
-        var version = "3.0.0"
-
-        val info = OpenApiSpec.Info(
-            title = "Default title",
-            version = "v1",
-            description = ""
-        )
-
-        val servers = mutableListOf<OpenApiServer>()
-
-        fun info(configure: OpenApiSpec.Info.() -> Unit) {
-            info.apply(configure)
-        }
-
-        fun server(configure: OpenApiServer.() -> Unit) {
-            servers += OpenApiServer("").apply(configure)
-        }
-
-    }
-
-    val swagger = Swagger()
-    val openApi = OpenApi()
-
-    var documentationFilePath: String = "documentation.yml"
-
-    internal val typeConverters = mutableListOf(
-        CollectionTypeConverter(),
-        DataClassTypeConverter(),
-        EnumTypeConverter(),
-        JavaUuidTypeConverter(),
-        KotlinTimeTypeConverter(),
-        KotlinUuidTypeConverter(),
-        KotlinXDateTimeTypeConverter(),
-        PrimitiveTypeConverter(),
-        SealedTypeConverter()
-    )
-
-    fun swagger(configure: Swagger.() -> Unit) {
-        swagger.apply(configure)
-    }
-
-    fun openApi(configure: OpenApi.() -> Unit) {
-        openApi.apply(configure)
-    }
-
-    fun typeConverters(vararg typeConverters: TypeConverter) {
-        this.typeConverters.addAll(typeConverters)
-    }
-
-}
-
 val KtorDocs = createApplicationPlugin(
     name = "KtorDocs",
-    createConfiguration = ::KtorDocsConfig
+    createConfiguration = ::KtorDocsPluginConfig
 ) {
 
     val config = pluginConfig
@@ -151,10 +77,9 @@ val KtorDocs = createApplicationPlugin(
         logger.info("Generating OpenAPI spec...")
 
         val openApiSpecGenerationTime = measureTime {
-            application.generateOpenApiSpec(
-                typeConverters = config.typeConverters,
-                config = config.openApi,
-                outputFilePath = config.documentationFilePath,
+            generateOpenApiSpec(
+                application = application,
+                config = config,
                 authenticationProviders = authenticationProviders.value,
                 routes = routes.value
             )
@@ -178,15 +103,14 @@ val KtorDocs = createApplicationPlugin(
 
 }
 
-private fun Application.generateOpenApiSpec(
-    typeConverters: List<TypeConverter>,
-    config: KtorDocsConfig.OpenApi,
-    outputFilePath: String,
-    authenticationProviders: Map<String, AuthenticationProvider>,
+private fun generateOpenApiSpec(
+    application: Application,
+    config: KtorDocsPluginConfig,
+    authenticationProviders: Collection<AuthenticationProvider>,
     routes: Map<String, Map<HttpMethod, RouteWithAuthentications>>
 ) {
 
-    val schemaGenerator = SchemaGenerator(typeConverters)
+    val schemaGenerator = SchemaGenerator(config.typeConverters)
 
     val tags = mutableSetOf<String>()
 
@@ -209,20 +133,31 @@ private fun Application.generateOpenApiSpec(
     }
 
     val securitySchemes = authenticationProviders
-        .mapValues { (_, value) ->
-            value.toOpenApiSecurityScheme(this)
+        .mapNotNull { provider ->
+            val converter = config.authProviderConverters
+                .firstOrNull { it.canConvert(provider) }
+
+            if (converter == null) {
+                logger.warn("Failed to convert auth provider ${provider.nameOrDefault}: no converter found")
+                return@mapNotNull null
+            }
+
+            return@mapNotNull try {
+                provider.nameOrDefault to converter.convert(
+                    provider = provider,
+                    application = application
+                )
+            } catch (ex: Exception) {
+                logger.warn("Failed to convert auth provider ${provider.nameOrDefault}", ex)
+                null
+            }
         }
-        .filterValues {
-            it != null
-        }
-        .mapValues { (_, value) ->
-            value!!
-        }
+        .toMap()
 
     val spec = OpenApiSpec(
-        version = config.version,
-        info = config.info,
-        servers = config.servers,
+        version = "3.1.0",
+        info = config.openApi.info,
+        servers = config.openApi.servers,
         paths = paths,
         components = OpenApiComponents(
             schemas = schemaGenerator.generate(),
@@ -239,25 +174,142 @@ private fun Application.generateOpenApiSpec(
         )
     )
 
-    File(outputFilePath).outputStream().use {
+    File(config.documentationFilePath).outputStream().use {
         yaml.encodeToStream(spec, it)
     }
 
 }
 
+private fun DocumentedRoute.toOpenApiRoute(
+    logger: Logger,
+    schemaGenerator: SchemaGenerator,
+    method: HttpMethod,
+    path: String,
+    authentications: Set<String>
+): OpenApiRoute {
+
+    val logTarget = "$method $path"
+
+    val parameters = mutableListOf<OpenApiRouteParameter>()
+
+    this.parameters.path.forEach { parameter ->
+        val kotlinType = parameter.typeInfo.kotlinType
+        if (kotlinType == null) {
+            logger.warn("Failed to generate path parameter ${parameter.name} schema for $logTarget: no kotlin type found")
+            return@forEach
+        }
+
+        val schemaResult = schemaGenerator.generateSchema(parameter.typeInfo.kotlinType!!)
+        if (schemaResult !is SchemaGenerationResult.Success) {
+            logger.warn("Failed to generate path parameter ${parameter.name} schema for $logTarget: $schemaResult")
+            return@forEach
+        }
+
+        parameters += OpenApiRouteParameter(
+            type = OpenApiRouteParameter.Type.PATH,
+            name = parameter.name,
+            schema = schemaResult.schema,
+            required = parameter.required
+        )
+    }
+
+    this.parameters.query.forEach { parameter ->
+        val kotlinType = parameter.typeInfo.kotlinType
+        if (kotlinType == null) {
+            logger.warn("Failed to generate query parameter ${parameter.name} schema for $logTarget: no kotlin type found")
+            return@forEach
+        }
+
+        val schemaResult = schemaGenerator.generateSchema(parameter.typeInfo.kotlinType!!)
+        if (schemaResult !is SchemaGenerationResult.Success) {
+            logger.warn("Failed to generate query parameter ${parameter.name} schema for $logTarget: $schemaResult")
+            return@forEach
+        }
+
+        parameters += OpenApiRouteParameter(
+            type = OpenApiRouteParameter.Type.QUERY,
+            name = parameter.name,
+            schema = schemaResult.schema,
+            required = parameter.required
+        )
+    }
+
+    // TODO: gather content type info
+    val contentType = ContentType.Application.Json
+
+    val requestBody = requestBody?.let {
+        val kotlinType = it.kotlinType
+        if (kotlinType == null) {
+            logger.warn("Failed to generate request body schema for $logTarget: no kotlin type found")
+            return@let null
+        }
+
+        val schemaResult = schemaGenerator.generateSchema(kotlinType)
+        if (schemaResult !is SchemaGenerationResult.Success) {
+            logger.warn("Failed to generate request body schema for $logTarget: $schemaResult")
+            return@let null
+        }
+
+        return@let OpenApiRouteBody(
+            content = mapOf(
+                contentType to OpenApiRouteBody.Schema(
+                    schema = schemaResult.schema
+                )
+            )
+        )
+    }
+
+    val mappedResponses = mutableMapOf<String, OpenApiRouteBody>()
+
+    responses.forEach { (statusCode, response) ->
+        val bodyKotlinType = response.body.kotlinType
+        if (bodyKotlinType == null) {
+            logger.warn("Failed to generate response body schema for $logTarget -> $statusCode: no kotlin type found")
+            return@forEach
+        }
+
+        val content = if (response.body.type == Unit::class) {
+            emptyMap()
+        } else {
+            val schemaResult = schemaGenerator.generateSchema(bodyKotlinType)
+            if (schemaResult !is SchemaGenerationResult.Success) {
+                logger.warn("Failed to generate response body schema for $logTarget -> $statusCode: $schemaResult")
+                return@forEach
+            }
+
+            mapOf(
+                contentType to OpenApiRouteBody.Schema(
+                    schema = schemaResult.schema
+                )
+            )
+        }
+
+        mappedResponses[statusCode.value.toString()] = OpenApiRouteBody(
+            content = content,
+            description = response.description ?: ""
+        )
+    }
+
+    return OpenApiRoute(
+        tags = tags,
+        summary = description,
+        security = authentications.map { mapOf(it to emptyList()) },
+        parameters = parameters,
+        requestBody = requestBody,
+        responses = mappedResponses
+    )
+}
+
 @OptIn(UnsafeAPI::class)
-private fun Application.gatherAuthenticationProviders(): Map<String, AuthenticationProvider> {
+private fun Application.gatherAuthenticationProviders(): Collection<AuthenticationProvider> {
 
     val authenticationPlugin = pluginOrNull(Authentication)
-        ?: return emptyMap()
+        ?: return emptyList()
 
     val config = authenticationPlugin.getInternalField<AuthenticationConfig>("config")
     val providers = config.getInternalField<Map<String?, AuthenticationProvider>>("providers")
 
-    return providers.filterKeys { it != null }
-        .mapKeys { (key) ->
-            key!!
-        }
+    return providers.values
 }
 
 private fun Application.gatherDocumentedRoutes(): Map<String, Map<HttpMethod, RouteWithAuthentications>> {

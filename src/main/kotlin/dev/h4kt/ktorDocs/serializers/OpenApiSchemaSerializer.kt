@@ -49,7 +49,7 @@ object OpenApiSchemaSerializer : KSerializer<OpenApiSchema> {
         }
 
         return when {
-            "\$ref" in element -> OpenApiSchema.Reference.serializer()
+            $$"$ref" in element -> OpenApiSchema.Reference.serializer()
             "oneOf" in element -> OpenApiSchema.OneOf.serializer()
             else -> OpenApiSchema.TypedSchema.serializer()
         }

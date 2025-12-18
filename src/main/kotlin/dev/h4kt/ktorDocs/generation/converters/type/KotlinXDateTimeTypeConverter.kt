@@ -1,4 +1,4 @@
-package dev.h4kt.ktorDocs.generation.converters
+package dev.h4kt.ktorDocs.generation.converters.type
 
 import dev.h4kt.ktorDocs.types.openapi.components.OpenApiSchema
 import kotlinx.datetime.LocalDate
@@ -7,9 +7,7 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlinx.datetime.Instant
 
-class KotlinXDateTimeTypeConverter : TypeConverter() {
-
-    override val priority = 900
+class KotlinXDateTimeTypeConverter : TypeConverter(priority = 900) {
 
     private val supportedTypes = listOf(
         Instant::class,
@@ -17,7 +15,7 @@ class KotlinXDateTimeTypeConverter : TypeConverter() {
         LocalDateTime::class
     )
 
-    override fun doesSupport(type: KType): Boolean {
+    override fun canConvert(type: KType): Boolean {
         return type.classifierKClass in supportedTypes
     }
 
