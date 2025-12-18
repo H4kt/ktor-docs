@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "dev.h4kt"
-version = "2.0.5-SNAPSHOT"
+version = "2.0.0"
 
 repositories {
     mavenCentral()
@@ -39,7 +39,7 @@ kotlin {
     jvmToolchain(11)
 
     compilerOptions {
-//        freeCompilerArgs = listOf("-Xname-based-destructuring=complete")
+        freeCompilerArgs.addAll("-Xcontext-sensitive-resolution")
     }
 }
 

@@ -42,7 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🚀 Publish packages
-        run: ./gradlew publish
+        run: ./gradlew publishAllPublicationsToGitHubPackageRegistryRepository publishAllPublicationsToH4ktReleaseRepository
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           H4KT_REPO_USERNAME: ${{ secrets.H4KT_REPO_USERNAME }}
