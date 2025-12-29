@@ -9,6 +9,12 @@ This project is now superseded by the [official way](https://ktor.io/docs/openap
 ## Usage
 
 ### Add dependencies
+Latest stable build
+![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.h4kt.dev%2Freleases%2Fdev%2Fh4kt%2Fktor-docs%2Fmaven-metadata.xml&style=for-the-badge&logo=apache-maven&color=%237F52FF)
+
+Latest snapshot build
+![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.h4kt.dev%2Fsnapshots%2Fdev%2Fh4kt%2Fktor-docs%2Fmaven-metadata.xml&style=for-the-badge&logo=apache-maven&color=%237F52FF)
+
 build.gradle.kts
 ```kotlin
 repositories {
@@ -16,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.h4kt:ktor-docs:2.0.0")
+    implementation("dev.h4kt:ktor-docs:<latest-version>")
 }
 ```
 
