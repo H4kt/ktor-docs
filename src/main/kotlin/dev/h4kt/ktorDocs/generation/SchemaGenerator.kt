@@ -16,10 +16,20 @@ internal class SchemaGenerator(
     private val converters = converters.sortedByDescending { it.priority }
     private val typeMap = linkedMapOf<TypeMapKey, Triple<String, OpenApiSchema.Reference, OpenApiSchema>>()
 
-    // TODO: handle self-referencing types
     fun generateSchema(
         type: KType,
         parentTypes: List<KType> = emptyList()
+    ) = generateSchema(
+        type = type,
+        parentTypes = parentTypes,
+        allowReferences = true
+    )
+
+    // TODO: handle self-referencing types
+    internal fun generateSchema(
+        type: KType,
+        parentTypes: List<KType> = emptyList(),
+        allowReferences: Boolean
     ): SchemaGenerationResult {
         val classifier = type.classifier as? KClass<*>
             ?: return SchemaGenerationResult.UnsupportedType(type)
@@ -44,7 +54,12 @@ internal class SchemaGenerator(
                 parentTypes = parentTypes,
                 classifier = classifier,
                 convertDownstream = convertDownstream@{ downstreamType ->
-                    val result = generateSchema(downstreamType, listOf(type) + parentTypes)
+                    val result = generateSchema(
+                        type = downstreamType,
+                        parentTypes = listOf(type) + parentTypes,
+                        allowReferences = allowReferences
+                    )
+
                     if (result !is SchemaGenerationResult.Success) {
                         error("Failed to generate schema for $downstreamType: $result")
                     }
@@ -58,7 +73,7 @@ internal class SchemaGenerator(
 
         val hasArguments = type.arguments.isNotEmpty()
 
-        if (hasArguments || schema.shouldBeInlined()) {
+        if (!allowReferences || hasArguments || schema.shouldBeInlined()) {
             return SchemaGenerationResult.Success(schema)
         }
 

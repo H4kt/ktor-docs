@@ -9,6 +9,7 @@ dotenv = "4.0.0"
 
 [plugins]
 kotlin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-plugin-powerAssert = { id = "org.jetbrains.kotlin.plugin.power-assert", version.ref = "kotlin" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 dotenv = { id = "co.uzzu.dotenv.gradle", version.ref = "dotenv" }
 

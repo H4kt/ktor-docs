@@ -19,9 +19,11 @@ class SealedTypeConverter : TypeConverter(priority = 1000) {
         classifier: KClass<*>,
         convertDownstream: (type: KType) -> OpenApiSchema
     ): OpenApiSchema {
-        val variants = classifier.sealedSubclasses.map {
-            return@map convertDownstream(it.createType()) // TODO: type arguments
-        }
+        val variants = classifier.sealedSubclasses
+            .sortedBy { it.simpleName }
+            .map {
+                return@map convertDownstream(it.createType()) // TODO: type arguments
+            }
 
         return OpenApiSchema.OneOf(
             variants = variants,

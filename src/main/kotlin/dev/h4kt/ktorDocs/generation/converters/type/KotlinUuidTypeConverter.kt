@@ -20,7 +20,7 @@ class KotlinUuidTypeConverter : TypeConverter(priority = 900) {
         convertDownstream: (type: KType) -> OpenApiSchema
     ): OpenApiSchema {
         return OpenApiSchema.String(
-            format = "UUID",
+            format = "uuid",
             nullable = type.isMarkedNullable
         )
     }

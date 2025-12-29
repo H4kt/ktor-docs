@@ -1,6 +1,7 @@
 plugins {
 
     alias(libs.plugins.kotlin)
+    alias(libs.plugins.kotlin.plugin.powerAssert)
     alias(libs.plugins.kotlin.plugin.serialization)
 
     alias(libs.plugins.dotenv)

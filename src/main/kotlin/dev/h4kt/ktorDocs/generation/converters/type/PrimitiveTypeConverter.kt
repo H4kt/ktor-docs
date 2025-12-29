@@ -35,8 +35,11 @@ class PrimitiveTypeConverter : TypeConverter(priority = 900) {
         val isNullable = type.isMarkedNullable
 
         return when (classifier) {
-            String::class,
+            String::class -> OpenApiSchema.String(
+                nullable = isNullable
+            )
             Char::class -> OpenApiSchema.String(
+                format = "char",
                 nullable = isNullable
             )
             Byte::class,

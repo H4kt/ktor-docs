@@ -6,6 +6,7 @@ import dev.h4kt.ktorDocs.generation.converters.auth.BearerAuthProviderConverter
 import dev.h4kt.ktorDocs.generation.converters.auth.OAuthAuthProviderConverter
 import dev.h4kt.ktorDocs.generation.converters.type.CollectionTypeConverter
 import dev.h4kt.ktorDocs.generation.converters.type.DataClassTypeConverter
+import dev.h4kt.ktorDocs.generation.converters.type.DataObjectTypeConverter
 import dev.h4kt.ktorDocs.generation.converters.type.EnumTypeConverter
 import dev.h4kt.ktorDocs.generation.converters.type.JavaUuidTypeConverter
 import dev.h4kt.ktorDocs.generation.converters.type.KotlinTimeTypeConverter
@@ -18,6 +19,7 @@ import dev.h4kt.ktorDocs.types.openapi.OpenApiServer
 import dev.h4kt.ktorDocs.types.openapi.OpenApiSpec
 import io.ktor.server.plugins.swagger.SwaggerConfig
 
+@Suppress("UNUSED")
 class KtorDocsPluginConfig {
 
     class Swagger {
@@ -61,6 +63,7 @@ class KtorDocsPluginConfig {
     internal val typeConverters = mutableListOf(
         CollectionTypeConverter(),
         DataClassTypeConverter(),
+        DataObjectTypeConverter(),
         EnumTypeConverter(),
         JavaUuidTypeConverter(),
         KotlinTimeTypeConverter(),
